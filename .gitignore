@@ -30,6 +30,9 @@ inc/
 # Visual Studio Code
 /.vscode
 
+# i18n
+po/*.gmo
+
 # ExtUtils::MakeMaker
 /blib/
 /_eumm/
