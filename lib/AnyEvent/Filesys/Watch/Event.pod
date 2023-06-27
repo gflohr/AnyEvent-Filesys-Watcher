@@ -1,0 +1,63 @@
+=head1 NAME
+
+AnyEvent::Filesys::Watch::Event - Filesystem Change Events
+
+=head1 SYNOPSIS
+
+	die "AnyEvent::Filesys::Watch::Event should not be used"
+	    . " directly. Use AnyEvent::Filesys::Watch instead";
+
+=head1 DESCRIPTION
+
+This class provides an abstraction for filesystem change events
+for L<AnyEvent::Filesys::Watch>.
+
+=head1 CONSTRUCTORS
+
+The following constructors are available:
+
+=over 4
+
+=item B<new(ARGUMENTS)>
+
+Creates an event instance.  The following named arguments are supported:
+
+=over 8
+
+=item B<path PATH>
+
+B<PATH> must be the absolute path to the file that changed.  Required.
+
+=item B<type TYPE>
+
+B<TYPE> must be one of "created", "modified", "deleted".  Required.
+
+=item B<is_directory BOOLEAN>
+
+B<BOOLEAN> should be a truthy value for directories, false otherwise.
+
+=back
+
+=back
+
+=head1 METHODS
+
+=over 4
+
+=item B<path>
+
+Returns the path.
+
+=item B<type>
+
+Returns the type as a string.
+
+=item B<isDirectory>
+
+Returns a truthy value for directories, false otherwise.
+
+=back
+
+=head1 SEE ALSO
+
+L<AnyEvent::Filesys::Watch>, perl(1)
