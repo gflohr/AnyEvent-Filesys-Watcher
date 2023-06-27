@@ -1,0 +1,67 @@
+=head1 NAME
+
+AnyEvent::Filesys::Watch - Watch file system for changes
+
+=head1 SYNOPSIS
+
+    use AnyEvent::Filesys::Watch;
+
+    $watcher = AnyEvent::Filesys::Watch->new(
+		dirs => ['src', 'deps'],
+		interval => 2.0,
+		filter => sub { shift !~ /\.(swp|tmp)$/ },
+		cb => sub {
+			my (@events) = @_;
+
+			# Process.
+		},
+		# Improves efficiency on certain platforms.
+		parse_events => 1,
+	);
+
+=head1 DESCRIPTION
+
+
+=head1 CONSTRUCTORS
+
+The following constructors are available:
+
+=over 4
+
+=item B<new(OPTIONS)>
+
+Creates a new B<AnyEvent::Filesys::Watch>.  B<OPTIONS> is a hash of named options.
+
+=over 8
+
+=item B<verbose>
+
+Switches on verbose mode.
+
+=back
+
+=back 
+
+=head1 METHODS
+
+The public API consists of the following methods:
+
+=over 4
+
+=item B<hello([NAME])>
+
+Returns a greeting.  B<NAME> defaults to 'world'.
+
+=back
+
+=head1 BUGS
+
+None known.
+
+=head1 AUTHOR
+
+B<AnyEvent::Filesys::Watch> was written by L<Guido Flohr|http://www.guido-flohr.net/>.
+
+=head1 SEE ALSO
+
+perl(1)

@@ -7,7 +7,7 @@ use 5.010;
 use ExtUtils::MakeMaker;
 
 my %WriteMakefileArgs = (
-  "ABSTRACT" => "Perl 5 Starter Project",
+  "ABSTRACT" => "Watch file system for changes",
   "AUTHOR" => "Guido Flohr <guido.flohr\@cantanea.com>",
   "BUILD_REQUIRES" => {
     "Module::Build" => "0.28"
@@ -16,17 +16,17 @@ my %WriteMakefileArgs = (
     "ExtUtils::MakeMaker" => 0,
     "Module::Build" => "0.28"
   },
-  "DISTNAME" => "Anyevent::Filesys::Watch",
+  "DISTNAME" => "Anyevent-Filesys-Watch",
   "LICENSE" => "unrestricted",
   "MIN_PERL_VERSION" => "5.010",
-  "NAME" => "AnyEvent::Filesys::Watch",
+  "NAME" => "Anyevent::Filesys::Watch",
   "PREREQ_PM" => {
     "strict" => 0
   },
   "TEST_REQUIRES" => {
     "Test::More" => 0
   },
-  "VERSION" => "0.1",
+  "VERSION" => "v0.0.1",
   "test" => {
     "TESTS" => "t/*.t"
   }

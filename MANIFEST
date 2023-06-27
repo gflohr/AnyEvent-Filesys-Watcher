@@ -6,10 +6,10 @@ MANIFEST
 META.json
 META.yml
 Makefile.PL
-README.md
 README.pod
 dist.ini
-lib/Perl/Starter.pm
+lib/AnyEvent/Filesys/Watch.pm
+lib/AnyEvent/Filesys/Watch.pod
 t/00base.t
 t/author-critic.t
 t/author-pod-coverage.t

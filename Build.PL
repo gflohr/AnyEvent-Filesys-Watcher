@@ -14,14 +14,14 @@ my %module_build_args = (
     "ExtUtils::MakeMaker" => 0,
     "Module::Build" => "0.28"
   },
-  "dist_abstract" => "Perl 5 Starter Project",
+  "dist_abstract" => "Watch file system for changes",
   "dist_author" => [
     "Guido Flohr <guido.flohr\@cantanea.com>"
   ],
-  "dist_name" => "Anyevent::Filesys::Watch",
-  "dist_version" => "0.1",
+  "dist_name" => "Anyevent-Filesys-Watch",
+  "dist_version" => "v0.0.1",
   "license" => "unrestricted",
-  "module_name" => "AnyEvent::Filesys::Watch",
+  "module_name" => "Anyevent::Filesys::Watch",
   "recursive_test_files" => 1,
   "requires" => {
     "perl" => "5.010",
