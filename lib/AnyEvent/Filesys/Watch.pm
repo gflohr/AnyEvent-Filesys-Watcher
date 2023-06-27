@@ -101,14 +101,15 @@ sub parseEvents {
 }
 
 sub skipSubdirectories {
-	shift->{__skip_subdirectories} = @_;
+	shift->{__skip_subdirectories};
 }
 
 # Taken from AnyEvent::Filesys::Notify.
 sub _scanFilesystem {
 	my ($self, @args) = @_;
 
-	# Accept either an array of directories or a array reference of directories.
+	# Accept either an array of directories or an array reference of
+	# directories.
 	my @paths = ref $args[0] eq 'ARRAY' ? @{ $args[0] } : @args;
 
 	my $fs_stats = {};
@@ -116,7 +117,7 @@ sub _scanFilesystem {
 	my $rule = Path::Iterator::Rule->new;
 	$rule->skip_subdirs(qr/./)
 		if (ref $self) =~ /^AnyEvent::Filesys::Watch/
-		&& $self->skipDirectories;
+		&& $self->skipSubdirectories;
 	my $next = $rule->iter(@paths);
 	while (my $file = $next->()) {
 		my $stat = $self->__stat($file)
@@ -164,6 +165,61 @@ sub _diffFilesystem {
 	return @events;
 }
 
+sub _filesystemMonitor {
+	my ($self, $value) = @_;
+
+	if (@_ > 1) {
+		$self->{__filesystem_monitor} = $value;
+	}
+
+	return $self->{__filesystem_monitor};
+}
+
+sub _processEvents {
+	my ($self, @raw_events) = @_;
+
+	# Some implementations provided enough information to parse the raw events,
+	# other require rescanning the file system (ie, Mac::FSEvents).
+	# have added a flag to avoid breaking old code.
+
+	my @events;
+	my $watcher = $self->{__watcher};
+
+	if ($self->parseEvents and $watcher->can('_parseEvents') ) {
+		@events =
+			$watcher->_parseEvents(sub { $self->__applyFilter(@_) }, @raw_events);
+	} else {
+		my $new_fs = $self->_scanFilesystem($self->directories);
+
+		@events = $self->__applyFilter(
+			$self->_diffFilesystem($self->__oldFilesystem, $new_fs));
+		$self->__oldFilesystem($new_fs);
+
+		# Some backends (when not using parse_events) need to add files
+		# (KQueue) or directories (Inotify2) to the watch list after they are
+		# created. Give them a chance to do that here.
+		$watcher->_postProcessEvents(@events)
+			if $watcher->can('_postProcessEvents');
+	}
+
+	$self->callback->(@events) if @events;
+
+	return \@events;
+}
+
+sub __applyFilter {
+	my ($self, @events) = @_;
+
+foreach my $event (@events) {
+	if ($event->path =~ /onlyme/) {
+		$DB::single = 1;
+		last;
+	}
+}
+	my $cb = $self->filter;
+	return grep { $cb->( $_->path ) } @events;
+}
+
 sub __oldFilesystem {
 	my ($self, $fs) = @_;
 
@@ -183,10 +239,11 @@ sub __compileFilter {
 
 	my $reftype = reftype $filter;
 	if ('REGEXP' eq $reftype) {
-		$filter = sub { shift =~ $filter };
-	} elsif ($reftype ne 'CODEREF') {
+		my $regexp = $filter;
+		$filter = sub { shift =~ $regexp };
+	} elsif ($reftype ne 'CODE') {
 		require Carp;
-		Carp::confess(__("The filter must either be regular expression or"
+		Carp::confess(__("The filter must either be a regular expression or"
 						. " code reference"));
 	}
 

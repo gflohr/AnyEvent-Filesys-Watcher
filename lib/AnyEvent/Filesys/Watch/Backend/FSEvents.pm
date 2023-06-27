@@ -1,4 +1,4 @@
-package AnyEvent::Filesys::Notify::Backend::FSEvents;
+package AnyEvent::Filesys::Watch::Backend::FSEvents;
 
 use AnyEvent;
 use Mac::FSEvents;
@@ -22,7 +22,7 @@ sub new {
 		push @watchers, $w;
 	}
 
-	$watch->_fsMonitor(\@fs_monitors);
+	$watch->_filesystemMonitor(\@fs_monitors);
 
 	my $self = \@watchers;
 
