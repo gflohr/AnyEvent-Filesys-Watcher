@@ -4,9 +4,9 @@ AnyEvent::Filesys::Watch - Watch file system for changes
 
 =head1 SYNOPSIS
 
-    use AnyEvent::Filesys::Watch;
+	use AnyEvent::Filesys::Watch;
 
-    $watcher = AnyEvent::Filesys::Watch->new(
+	$watcher = AnyEvent::Filesys::Watch->new(
 		dirs => ['src', 'deps'],
 		interval => 2.0,
 		filter => sub { shift !~ /\.(swp|tmp)$/ },
@@ -21,6 +21,11 @@ AnyEvent::Filesys::Watch - Watch file system for changes
 
 =head1 DESCRIPTION
 
+This module is very similar to B<AnyEvent::Filesys::Notify>.  The main
+difference is that it is not based on L<Moose> and therefore has fewer
+dependencies.
+
+See L</"DIFFERENCES TO AnyEvent::Filesys::Notify"> for other differences.
 
 =head1 CONSTRUCTORS
 
@@ -30,17 +35,80 @@ The following constructors are available:
 
 =item B<new(OPTIONS)>
 
-Creates a new B<AnyEvent::Filesys::Watch>.  B<OPTIONS> is a hash of named options.
+Creates a new B<AnyEvent::Filesys::Watch>.  The constructor may throw an
+exception in case of an error!
+
+B<OPTIONS> is a hash of named options:
 
 =over 8
 
-=item B<verbose>
+=item B<directories DIRECTORIES>
 
-Switches on verbose mode.
+B<DIRECTORIES> is a reference to an array of directories to monitor.
+
+This argument is required.
+
+=item B<callback CALLBACK>
+
+A code reference that is called, when a modification to the monitored
+directories is deteced. The callback is passed a list of
+L<AnyEvent::Filesys::Watch::Events.
+
+This argument is required.
+
+=item B<interval SECONDS>
+
+Specifies the time in fractional seconds between file system checks
+for the L<AnyEvent::Filesys::Watch::Backend::Fallback> implementation.
+
+Specifies the latency for L<Mac::FSEvents> for the
+L<AnyEvent::Filesys::Watch::Backend::FSEvents> implementation.
+
+Ignored for the L<AnyEvent::Filesys::Watch::Backend::Inotify2> implementation.
+
+Optional. The default is 2.0.
+
+=item B<filter FILTER>
+
+B<FILTER> should either be a regular expression or a code reference.  If this
+is a regular expression, only (absolute) file names matching that regular
+expressions can cause an event.
+
+If B<FILTER> is a code reference, the subrouting receives the absolute file
+name as an argument and should return a truthy value for all files that
+should cause an event.
+
+Optional. By default, all events are passed through.
+
+=item B<backend BACKEND>
+
+Force the use of the specified backend. The backend is assumed to
+have the "AnyEvent::Filesys::Watch::Backend" prefix, but you can force
+a fully qualified name by prefixing it with a plus.
+
+Optional. The default is os-dependent: For Linux it is
+L<AnyEvent::Filesys::Watch::Inotify2>, for Mac OS it is
+L<AnyEvent::Filesys::Watch::FSEvents>, for BSD systems it is
+L<AnyEvent::Filesys::Watch::KQueue>, and for all other systems it is
+L<AnyEvent::Filesys::Watch::Fallback>.
+
+=item B<parse_events BOOLEAN>
+
+In backends that support it (currently INotify2), parse the events
+instead of rescanning file system for changed "stat()" information.
+Note, that this might cause slight changes in behavior. In
+particular, the Inotify2 backend will generate an additional
+'modified' event when a file changes (once when opened for write,
+and once when modified).
+
+=item <skip_subdirectories BOOLEAN>
+
+Skips subdirectories and anything in them while building a list of
+files/dirs to watch. Optional.
 
 =back
 
-=back 
+=back
 
 =head1 METHODS
 
@@ -48,9 +116,62 @@ The public API consists of the following methods:
 
 =over 4
 
-=item B<hello([NAME])>
+=item B<directories>
 
-Returns a greeting.  B<NAME> defaults to 'world'.
+Getter for the array reference of directories that get monitored.
+
+=item B<callback [CALLBACK]>
+
+Getter/setter for the callback.
+
+=item B<interval>
+
+Getter for the interval between polls.
+
+=item B<backend>
+
+Getter for the short name of the backend.  This has the same value as the
+named constructor argument if that argument was specified.
+
+=item B<backendClass>
+
+Getter for the fully qualified name of the backend.
+
+=item B<filter [FILTER]>
+
+Getter/setter for the filter.
+
+=item B<parseEvents [PARSE_EVENTS]>
+
+Getter/setter for the "parse_events" flag.
+
+=item B<skipSubdirectories>
+
+Getter for the "skip_subdirectories" flag.
+
+=back
+
+=head1 DIFFERENCES TO AnyEvent::Filesys::Notify
+
+=item over 4
+
+=item The constructor argument "no_external" is ignored.
+
+=item There is no method "no_external()".
+
+=item Methods and named arguments are "directories" and not "dirs".
+
+=item Methods and named arguments are "callback" and not "cb".
+
+=item The named argument is "skip_subdirectories" and not "skip_subdirs".
+
+=item The method is "skipSubdirectories" and not "skip_subdirs".
+
+=item The method is "parseEvents" and not "parse_events".
+
+=item None of the L<Moose> methods like "does()" are implemented.
+
+=item No type checking is done on arguments.
 
 =back
 
@@ -64,4 +185,7 @@ B<AnyEvent::Filesys::Watch> was written by L<Guido Flohr|http://www.guido-flohr.
 
 =head1 SEE ALSO
 
-perl(1)
+L<AnyEvent::Filesys::Watch::Backend::Fallback>,
+L<AnyEvent::Filesys::Watch::Backend::FSEvents>,
+L<AnyEvent::Filesys::Watch::Backend::INotify2>,
+L<AnyEvent::Filesys::Watch::Backend::KQue>, perl(1)

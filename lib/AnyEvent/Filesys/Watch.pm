@@ -139,7 +139,6 @@ sub __loadBackend {
 	}
 
 	$self->{__backend_class} = $backend_class;
-return $self; # So that one more test succeeds for now.
 
 	my $backend_module = $backend_class . '.pm';
 	$backend_module =~ s{::}{/}g;
