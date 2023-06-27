@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use 5.010;
+use 5.010000;
 
 use ExtUtils::MakeMaker;
 
@@ -18,13 +18,33 @@ my %WriteMakefileArgs = (
   },
   "DISTNAME" => "Anyevent-Filesys-Watch",
   "LICENSE" => "unrestricted",
-  "MIN_PERL_VERSION" => "5.010",
+  "MIN_PERL_VERSION" => "5.010000",
   "NAME" => "Anyevent::Filesys::Watch",
   "PREREQ_PM" => {
+    "AnyEvent" => 0,
+    "Carp" => 0,
+    "IO::KQueue" => 0,
+    "Linux::Inotify2" => 0,
+    "Locale::TextDomain" => 0,
+    "Mac::FSEvents" => 0,
+    "Moo::Role" => 0,
+    "MooX::late" => 0,
+    "Path::Iterator::Rule" => 0,
+    "namespace::autoclean" => 0,
     "strict" => 0
   },
   "TEST_REQUIRES" => {
-    "Test::More" => 0
+    "AnyEvent::Filesys::Watch::Event" => 0,
+    "AnyEvent::Impl::Perl" => 0,
+    "Data::Dump" => 0,
+    "File::Find" => 0,
+    "File::Spec" => 0,
+    "Test::Exception" => "0.43",
+    "Test::More" => 0,
+    "Test::Without::Module" => "0.21",
+    "TestSupport" => 0,
+    "lib" => 0,
+    "warnings" => 0
   },
   "VERSION" => "v0.0.1",
   "test" => {
@@ -34,9 +54,29 @@ my %WriteMakefileArgs = (
 
 
 my %FallbackPrereqs = (
+  "AnyEvent" => 0,
+  "AnyEvent::Filesys::Watch::Event" => 0,
+  "AnyEvent::Impl::Perl" => 0,
+  "Carp" => 0,
+  "Data::Dump" => 0,
+  "File::Find" => 0,
+  "File::Spec" => 0,
+  "IO::KQueue" => 0,
+  "Linux::Inotify2" => 0,
+  "Locale::TextDomain" => 0,
+  "Mac::FSEvents" => 0,
   "Module::Build" => "0.28",
+  "Moo::Role" => 0,
+  "MooX::late" => 0,
+  "Path::Iterator::Rule" => 0,
+  "Test::Exception" => "0.43",
   "Test::More" => 0,
-  "strict" => 0
+  "Test::Without::Module" => "0.21",
+  "TestSupport" => 0,
+  "lib" => 0,
+  "namespace::autoclean" => 0,
+  "strict" => 0,
+  "warnings" => 0
 );
 
 
@@ -48,5 +88,17 @@ unless ( eval { ExtUtils::MakeMaker->VERSION(6.63_03) } ) {
 
 delete $WriteMakefileArgs{CONFIGURE_REQUIRES}
   unless eval { ExtUtils::MakeMaker->VERSION(6.52) };
+
+if ( $^O eq 'linux' ) {
+	$WriteMakefileArgs{PREREQ_PM}{'Linux::Inotify'} = $FallbackPrereqs{'Linux::Inotify'} = '1.22';
+}
+
+if ( $^O eq 'darwin' ) {
+	$WriteMakefileArgs{PREREQ_PM}{'Mac::FSEvents'} = $FallbackPrereqs{'Mac::FSEvents'} = '0.10';
+}
+
+if ( $^O =~ /bsd/i ) {
+	$WriteMakefileArgs{PREREQ_PM}{'IO::KQueue'} = $FallbackPrereqs{'IO::KQueue'} = '0.34';
+}
 
 WriteMakefile(%WriteMakefileArgs);
