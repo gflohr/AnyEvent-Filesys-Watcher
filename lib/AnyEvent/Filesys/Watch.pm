@@ -73,7 +73,7 @@ sub callback {
 	my ($self, $cb) = @_;
 
 	if (@_ > 1) {
-		$self->{__callback} = $cb;''
+		$self->{__callback} = $cb;
 	}
 
 	return $self->{__callback};
