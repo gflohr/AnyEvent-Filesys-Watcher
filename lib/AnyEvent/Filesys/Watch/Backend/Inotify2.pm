@@ -5,14 +5,14 @@ use strict;
 use Locale::TextDomain ('AnyEvent-Filesys-Watch');
 
 use AnyEvent;
-use Linux::INotify2;
+use Linux::Inotify2;
 use Carp;
 use Path::Iterator::Rule;
 
-sub _init {
-	my ($self, $watch) = @_;
+sub new {
+	my ($class, $watch) = @_;
 
-	my $inotify = Linux::INotify2->new
+	my $inotify = Linux::Inotify2->new
 		or croak "Unable to create new Linux::INotify2 object: $!";
 
 	# Need to add all the subdirs to the watch list, this will catch
@@ -25,22 +25,21 @@ sub _init {
 			$dir,
 			IN_MODIFY | IN_CREATE | IN_DELETE | IN_DELETE_SELF |
 				IN_MOVE | IN_MOVE_SELF | IN_ATTRIB,
-			sub { my $e = shift; $watch->_process_events($e); });
+			sub { my $e = shift; $watch->_processEvents($e); }
+		);
 	}
 
-	$self->_filesystenMonitor($inotify);
+	$watch->_filesystemMonitor($inotify);
 
-	$self->_watcher(
-		AnyEvent->io(
-			fh => $inotify->fileno,
-			poll => 'r',
-			cb => sub {
-				$inotify->poll;
-			}
-		)
-	);
+	my $self = [AnyEvent->io(
+		fh => $inotify->fileno,
+		poll => 'r',
+		cb => sub {
+			$inotify->poll;
+		}
+	)];
 
-	return 1;
+	bless $self, $class;
 }
 
 # Parse the events returned by Inotify2 instead of rescanning the files.
@@ -110,7 +109,7 @@ sub __makeEvent {
 	$type = 'created' if ($e->mask & (IN_CREATE | IN_MOVED_TO));
 
 	return unless $type;
-	return AnyEvent::Filesys::Notify::Event->new(
+	return AnyEvent::Filesys::Watch::Event->new(
 		path => $e->fullname,
 		type => $type,
 		is_directory => !!$e->IN_ISDIR,
@@ -127,13 +126,13 @@ sub __addEventsToWatch {
 	my ($self, $watch, @events) = @_;
 
 	for my $event (@events) {
-	next unless $event->is_dir && $event->is_created;
+	next unless $event->isDirectory && $event->isCreated;
 
-	$self->_fs_monitor->watch(
+	$watch->_filesystemMonitor->watch(
 		$event->path,
 		IN_MODIFY | IN_CREATE | IN_DELETE | IN_DELETE_SELF |
 			IN_MOVE | IN_MOVE_SELF | IN_ATTRIB,
-		sub { my $e = shift; $self->_process_events($e); });
+		sub { my $e = shift; $watch->_processEvents($e); });
 	}
 
 	return;

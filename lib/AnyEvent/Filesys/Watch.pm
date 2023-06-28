@@ -195,7 +195,7 @@ sub _processEvents {
 		my $new_fs = $self->_scanFilesystem($self->directories);
 
 		@events = $self->__applyFilter(
-			$self->_diffFilesystem($self->_oldFilesystem, $new_fs));
+	 		$self->_diffFilesystem($self->_oldFilesystem, $new_fs));
 		$self->_oldFilesystem($new_fs);
 
 		# Some backends (when not using parse_events) need to add files
