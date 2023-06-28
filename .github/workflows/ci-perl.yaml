@@ -37,16 +37,23 @@ jobs:
       run: cpanm --notest --installdeps --verbose .
 
     - name: 'Install Linux::Inotify2'
-      if: os == 'linux-latest'
+      if: matrix.os == 'linux-latest'
       run: cpanm --notest Linux::Inotify2
 
     - name: 'Install Mac::FSEvents'
-      if: os == 'macos-latest'
-      run: git clone https://github.com/skaji/Mac-FSEvents.git && cd Mac-FSEvents && perl Makefile.PL && make && make install && cd .. && rm -rf Mac-FSEvents
+      if: matrix.os == 'macos-latest'
+      run: |
+        git clone https://github.com/skaji/Mac-FSEvents.git &&
+        cd Mac-FSEvents &&
+        perl Makefile.PL &&
+        make &&
+        make install &&
+        cd .. &&
+        rm -rf Mac-FSEvents
 
     - name: 'Install IO::KQueue'
-      if: os == 'macos-latest'
-      run: cpanm -notest IO::KQueue
+      if: matrix.os == 'macos-latest'
+      run: cpanm --notest IO::KQueue
 
     - name: 'Prepare build'
       run: perl Makefile.PL
