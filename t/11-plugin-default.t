@@ -30,7 +30,7 @@ SKIP: {
 			callback => sub { }
 		);
 	}
-	qr/you may need to install the Mac::FSEvents module/, 'fails ok';
+	qr/you may need to install the [_0-9a-zA-Z:]+ module/, 'fails ok';
 }
 
 done_testing;
