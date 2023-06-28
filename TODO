@@ -1,0 +1,4 @@
+- Create a factory and then use proper inheritance.
+- Allow one single directory to be passed as a string.
+- Rename the whole thing to AnyEvent::Filesys::Watcher.
+- Use GitHub Actions.
