@@ -186,7 +186,11 @@ sub _processEvents {
 
 	if ($self->parseEvents and $watcher->can('_parseEvents') ) {
 		@events =
-			$watcher->_parseEvents(sub { $self->__applyFilter(@_) }, @raw_events);
+			$watcher->_parseEvents(
+				$self,
+				sub { $self->__applyFilter(@_) },
+				@raw_events
+			);
 	} else {
 		my $new_fs = $self->_scanFilesystem($self->directories);
 
