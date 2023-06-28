@@ -3,8 +3,6 @@ name: CI for Pushes
 on:
   push:
     branches: [ '**' ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   linux:
@@ -14,8 +12,6 @@ jobs:
       matrix:
         perl-version:
         - '5.36'
-        - '5.34'
-        - '5.14'
 
     container:
       image: perldocker/perl-tester:${{ matrix.perl-version }}
@@ -31,6 +27,41 @@ jobs:
 
     - name: 'Installing dependencies'
       run: cpanm --notest --installdeps --verbose . Linux::Inotify2
+
+    - name: 'Prepare build'
+      run: perl Makefile.PL
+
+    - name: 'Build'
+      run: make
+
+    - name: 'Test'
+      run: prove -wlvmb t
+
+  mac:
+    runs-on: macos-latest
+    strategy: fail-fast
+
+    steps:
+    - name: 'Check out repository'
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: 'Perl version'
+      run: perl -V
+
+    - name: 'Installing dependencies'
+      run: cpanm --notest --installdeps --verbose .
+
+    - name: 'Installing Mac::FSEvents'
+      run: >
+git clone https://github.com/skaji/Mac-FSEvents.git
+cd Mac-FSEvents
+perl Makefile.PL
+make
+make install
+cd ..
+rm -rf Mac-FSEvents
 
     - name: 'Prepare build'
       run: perl Makefile.PL
