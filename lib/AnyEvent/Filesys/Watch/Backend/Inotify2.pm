@@ -109,7 +109,7 @@ sub __makeEvent {
 	$type = 'created' if ($e->mask & (IN_CREATE | IN_MOVED_TO));
 
 	return unless $type;
-	return AnyEvent::Filesys::Notify::Event->new(
+	return AnyEvent::Filesys::Watch::Event->new(
 		path => $e->fullname,
 		type => $type,
 		is_directory => !!$e->IN_ISDIR,
