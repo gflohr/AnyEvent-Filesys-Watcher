@@ -78,6 +78,7 @@ jobs:
       run: cpanm --notest --installdeps --verbose .
 
     - name: 'Installing Mac::FSEvents'
+      if: 1 == 1
       run: git clone https://github.com/skaji/Mac-FSEvents.git && cd Mac-FSEvents && perl Makefile.PL && make && make install && cd .. && rm -rf Mac-FSEvents
 
     - name: 'Install IO::KQueue'
