@@ -2,3 +2,4 @@
 - Allow one single directory to be passed as a string.
 - Rename the whole thing to AnyEvent::Filesys::Watcher.
 - Use GitHub Actions.
+- Check TODO file from original module.
