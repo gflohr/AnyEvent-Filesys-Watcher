@@ -2,7 +2,7 @@ name: CI for Pushes
 
 on:
   push:
-    branches: [ main ]
+    branches: [ '**' ]
   pull_request:
     branches: [ main ]
 
@@ -30,7 +30,7 @@ jobs:
       run: perl -V
 
     - name: 'Installing dependencies'
-      run: cpanm --notest --installdeps --verbose .
+      run: cpanm --notest --installdeps --verbose . Linux::Inotify2
 
     - name: 'Prepare build'
       run: perl Makefile.PL
