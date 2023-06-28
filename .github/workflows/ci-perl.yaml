@@ -5,20 +5,17 @@ on:
     branches: [ '**' ]
 
 jobs:
-  linux:
-    runs-on: ubuntu-latest
+  on-push:
     strategy:
       fail-fast: false
       matrix:
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
         perl-version:
         - '5.36'
         include:
         - perl-version: '5.36'
           os: ubuntu-latest
           coverage: true
-
-    container:
-      image: perldocker/perl-tester:${{ matrix.perl-version }}
 
     steps:
     - name: 'Check out repository'
@@ -29,11 +26,25 @@ jobs:
     - name: 'Perl version'
       run: perl -V
 
+    - name: Set up perl
+      uses: shogo82148/actions-setup-perl@v1
+      with:
+        perl-version: ${{ matrix.perl }}
+
     - name: 'Installing dependencies'
       run: cpanm --notest --installdeps --verbose .
 
-    - name: 'Install backend'
+    - name: 'Install Linux::Inotify2'
+      id: os == 'linux-latest'
       run: cpanm --notest Linux::Inotify2
+
+    - name: 'Install Mac::FSEvents'
+      if: os == 'macos-latest'
+      run: git clone https://github.com/skaji/Mac-FSEvents.git && cd Mac-FSEvents && perl Makefile.PL && make && make install && cd .. && rm -rf Mac-FSEvents
+
+    - name: 'Install IO::KQueue'
+      if: os == 'macos-latest'
+      run: cpanm -notest IO::KQueue
 
     - name: 'Prepare build'
       run: perl Makefile.PL
@@ -51,80 +62,4 @@ jobs:
       run: |
         cpanm -n Devel::Cover::Report::Coveralls
         cover -test -report Coveralls
-
-  mac:
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        perl-version:
-        - '5.36'
-
-    steps:
-    - name: 'Check out repository'
-      uses: actions/checkout@v3
-      with:
-        submodules: recursive
-
-    - name: 'Perl version'
-      run: perl -V
-
-    - name: Set up perl
-      uses: shogo82148/actions-setup-perl@v1
-      with:
-        perl-version: ${{ matrix.perl }}
-
-    - name: 'Installing dependencies'
-      run: cpanm --notest --installdeps --verbose .
-
-    - name: 'Installing Mac::FSEvents'
-      if: 1 == 1
-      run: git clone https://github.com/skaji/Mac-FSEvents.git && cd Mac-FSEvents && perl Makefile.PL && make && make install && cd .. && rm -rf Mac-FSEvents
-
-    - name: 'Install IO::KQueue'
-      run: cpanm --notest IO::KQueue
-
-    - name: 'Prepare build'
-      run: perl Makefile.PL
-
-    - name: 'Build'
-      run: make
-
-    - name: 'Test'
-      run: prove -wlvmb t
-
-
-  ms-dos:
-    runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        perl-version:
-        - '5.36'
-
-    steps:
-    - name: 'Check out repository'
-      uses: actions/checkout@v3
-      with:
-        submodules: recursive
-
-    - name: 'Perl version'
-      run: perl -V
-
-    - name: Set up perl
-      uses: shogo82148/actions-setup-perl@v1
-      with:
-        perl-version: ${{ matrix.perl }}
-
-    - name: 'Installing dependencies'
-      run: cpanm --notest --installdeps --verbose .
-
-    - name: 'Prepare build'
-      run: perl Makefile.PL
-
-    - name: 'Build'
-      run: make
-
-    - name: 'Test'
-      run: prove -wlvmb t
 
