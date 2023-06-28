@@ -54,14 +54,7 @@ jobs:
       run: cpanm --notest --installdeps --verbose .
 
     - name: 'Installing Mac::FSEvents'
-      run: >
-  git clone https://github.com/skaji/Mac-FSEvents.git &&
-  cd Mac-FSEvents &&
-  perl Makefile.PL &&
-  make &&
-  make install &&
-  cd .. &&
-  rm -rf Mac-FSEvents
+      run: git clone https://github.com/skaji/Mac-FSEvents.git && cd Mac-FSEvents && perl Makefile.PL && make && make install && cd .. && rm -rf Mac-FSEvents
 
     - name: 'Prepare build'
       run: perl Makefile.PL
