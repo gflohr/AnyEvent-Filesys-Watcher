@@ -6,6 +6,8 @@ on:
 
 jobs:
   on-push:
+    runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
