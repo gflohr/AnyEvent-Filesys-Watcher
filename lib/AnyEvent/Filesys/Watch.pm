@@ -6,7 +6,6 @@
 package AnyEvent::Filesys::Watch;
 
 use strict;
-use v5.10;
 
 use Locale::TextDomain ('AnyEvent-Filesys-Watch');
 use Scalar::Util qw(reftype);
@@ -45,7 +44,7 @@ sub new {
 		$self->{'__' . $arg} = $args{$arg};
 	}
 
-	$self->__oldFilesystem($self->_scanFilesystem($self->directories));
+	$self->_oldFilesystem($self->_scanFilesystem($self->directories));
 
 	$self->__loadBackend;
 
@@ -192,13 +191,13 @@ sub _processEvents {
 		my $new_fs = $self->_scanFilesystem($self->directories);
 
 		@events = $self->__applyFilter(
-			$self->_diffFilesystem($self->__oldFilesystem, $new_fs));
-		$self->__oldFilesystem($new_fs);
+			$self->_diffFilesystem($self->_oldFilesystem, $new_fs));
+		$self->_oldFilesystem($new_fs);
 
 		# Some backends (when not using parse_events) need to add files
 		# (KQueue) or directories (Inotify2) to the watch list after they are
 		# created. Give them a chance to do that here.
-		$watcher->_postProcessEvents(@events)
+		$watcher->_postProcessEvents($self, @events)
 			if $watcher->can('_postProcessEvents');
 	}
 
@@ -210,17 +209,11 @@ sub _processEvents {
 sub __applyFilter {
 	my ($self, @events) = @_;
 
-foreach my $event (@events) {
-	if ($event->path =~ /onlyme/) {
-		$DB::single = 1;
-		last;
-	}
-}
 	my $cb = $self->filter;
 	return grep { $cb->( $_->path ) } @events;
 }
 
-sub __oldFilesystem {
+sub _oldFilesystem {
 	my ($self, $fs) = @_;
 
 	if (@_ > 1) {

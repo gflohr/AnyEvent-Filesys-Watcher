@@ -49,4 +49,16 @@ sub isDirectory {
 	shift->{__is_directory};
 }
 
+sub isCreated {
+	return 'created' eq shift->{__type};
+}
+
+sub isModified {
+	return 'modified' eq shift->{__type};
+}
+
+sub isDeleted {
+	return 'deleted' eq shift->{__type};
+}
+
 1;

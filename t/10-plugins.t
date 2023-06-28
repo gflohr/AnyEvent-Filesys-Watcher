@@ -90,7 +90,9 @@ if ($^O eq 'darwin' and eval { require IO::KQueue; 1; }) {
 				backend => 'KQueue'
 			);
 		};
-		isa_ok ($w, $AEFW);
+		my $x = $@ || 'no exception';
+		ok !$@, "$x";
+		isa_ok $w, $AEFW;
 		isnt $w->backendClass, "${AEFW}::Backend::Fallback", '... Fallback';
 		isnt $w->backendClass, "${AEFW}::Backend::Inotify2", '... Inotify2';
 		isnt $w->backendClass, "${AEFW}::Backend::FSEvents", '... FSEvents';
