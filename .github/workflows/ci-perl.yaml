@@ -94,7 +94,7 @@ jobs:
       run: prove -wlvmb t
 
 
-  windows:
+  ms-dos:
     runs-on: windows-latest
     strategy:
       fail-fast: false
