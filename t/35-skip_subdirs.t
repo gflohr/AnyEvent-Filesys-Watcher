@@ -7,7 +7,7 @@ use lib 't/lib';
 $|++;
 
 use TestSupport qw(create_test_files delete_test_files move_test_files
-  modify_attrs_on_test_files $dir received_events receive_event);
+	modify_attrs_on_test_files $dir received_events receive_event);
 
 use AnyEvent::Filesys::Watch;
 use AnyEvent::Impl::Perl;
@@ -15,63 +15,62 @@ use AnyEvent::Impl::Perl;
 create_test_files(qw(one/1 two/1 one/sub/1));
 
 my $n = AnyEvent::Filesys::Watch->new(
-    dirs   => [ map { File::Spec->catfile( $dir, $_ ) } qw(one two) ],
-    cb     => sub   { receive_event(@_) },
-    skip_subdirs => 1,
+	directories => [ map { File::Spec->catfile($dir, $_)} qw(one two) ],
+	callback => sub { receive_event(@_) },
+	skip_subdirectories => 1,
 );
-isa_ok( $n, 'AnyEvent::Filesys::Watch' );
+isa_ok($n, 'AnyEvent::Filesys::Watch');
 
 SKIP: {
-    skip "not sure which os we are on", 1
-      unless $^O =~ /linux|darwin|bsd/;
-    ok( $n->does('AnyEvent::Filesys::Watch::Role::Inotify2'),
-        '... with the linux role' )
-      if $^O eq 'linux';
-    ok( $n->does('AnyEvent::Filesys::Watch::Role::FSEvents'),
-        '... with the mac role' )
-      if $^O eq 'darwin';
-    ok( $n->does('AnyEvent::Filesys::Watch::Role::KQueue'),
-        '... with the bsd role' )
-      if $^O =~ /bsd/;
+	skip "not sure which os we are on", 1
+		unless $^O =~ /linux|darwin|bsd/;
+	is($n->backendClass, 'AnyEvent::Filesys::Watch::Backend::Inotify2',
+		'... with the linux backend')
+		if $^O eq 'linux';
+	is($n->backendClass, 'AnyEvent::Filesys::Watch::Backend::FSEvents',
+		'... with the mac backend')
+		if $^O eq 'darwin';
+	is($n->backendClass, 'AnyEvent::Filesys::Watch::Backend::KQueue',
+		'... with the bsd backend')
+		if $^O =~ /bsd/;
 }
 
 diag "This might take a few seconds to run...";
 
 # ls: one/1 +one/2 one/sub/1 two/1
-received_events( sub { create_test_files(qw(one/2)) },
-    'create a file', qw(created) );
+received_events(sub { create_test_files(qw(one/2)) },
+	'create a file', qw(created));
 
 # ls: one/1 ~one/2 one/sub/1 two/1
-received_events( sub { create_test_files(qw(one/2)) },
-    'modify a file', qw(modified) );
+received_events(sub { create_test_files(qw(one/2)) },
+	'modify a file', qw(modified));
 
 # ls: one/1 -one/2 one/sub/1 two/1
-received_events( sub { delete_test_files(qw(one/2)) },
-    'delete a file', qw(deleted) );
+received_events(sub { delete_test_files(qw(one/2)) },
+	'delete a file', qw(deleted));
 
 # ls: one/1 one/sub/1 +one/sub/2 two/1
-received_events( sub { create_test_files(qw(one/sub/2)) },
-    'create a file in subdir', qw() );
+received_events(sub { create_test_files(qw(one/sub/2)) },
+	'create a file in subdir', qw());
 
 # ls: one/1 one/sub/1 ~one/sub/2 two/1
-received_events( sub { create_test_files(qw(one/sub/2)) },
-    'modify a file in subdir', qw() );
+received_events(sub { create_test_files(qw(one/sub/2)) },
+	'modify a file in subdir', qw());
 
 # ls: one/1 one/sub/1 -one/sub/2 two/1
-received_events( sub { delete_test_files(qw(one/sub/2)) },
-    'delete a file in subdir', qw() );
+received_events(sub { delete_test_files(qw(one/sub/2)) },
+	'delete a file in subdir', qw());
 
 SKIP: {
-    skip "skip attr mods on Win32", 1 if $^O eq 'MSWin32';
+	skip "skip attr mods on Win32", 1 if $^O eq 'MSWin32';
 
-    # ls: one/1 one/sub/1 ~two/1
-    received_events( sub { modify_attrs_on_test_files(qw(two/1)) },
-        'modify attributes', qw(modified) );
+	# ls: one/1 one/sub/1 ~two/1
+	received_events(sub { modify_attrs_on_test_files(qw(two/1)) },
+		'modify attributes', qw(modified));
 
-    # ls: one/1 ~one/sub/1 two/1
-    received_events( sub { modify_attrs_on_test_files(qw(one/sub/1)) },
-        'modify attributes in a subdir', qw() );
+	# ls: one/1 ~one/sub/1 two/1
+	received_events(sub { modify_attrs_on_test_files(qw(one/sub/1)) },
+		'modify attributes in a subdir', qw());
 }
 
-ok( 1, '... arrived' );
-
+ok(1, '... arrived');
