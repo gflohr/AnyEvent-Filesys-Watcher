@@ -39,7 +39,8 @@ jobs:
 
   mac:
     runs-on: macos-latest
-    strategy: fail-fast
+    strategy:
+      fail-fast: false
 
     steps:
     - name: 'Check out repository'
@@ -51,10 +52,37 @@ jobs:
       run: perl -V
 
     - name: 'Installing dependencies'
-      run: cpanm --notest --installdeps --verbose .
+      run: cpanm --notest --installdeps --verbose . IO::KQueue
 
     - name: 'Installing Mac::FSEvents'
       run: git clone https://github.com/skaji/Mac-FSEvents.git && cd Mac-FSEvents && perl Makefile.PL && make && make install && cd .. && rm -rf Mac-FSEvents
+
+    - name: 'Prepare build'
+      run: perl Makefile.PL
+
+    - name: 'Build'
+      run: make
+
+    - name: 'Test'
+      run: prove -wlvmb t
+
+
+  windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    - name: 'Check out repository'
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: 'Perl version'
+      run: perl -V
+
+    - name: 'Installing dependencies'
+      run: cpanm --notest --installdeps --verbose . IO::KQueue
 
     - name: 'Prepare build'
       run: perl Makefile.PL
