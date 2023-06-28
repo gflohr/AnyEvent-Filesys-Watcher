@@ -35,7 +35,7 @@ jobs:
     - name: 'Prepare build'
       run: perl Makefile.PL
 
-    -name: 'Build'
+    - name: 'Build'
       run: make
 
     - name: 'Test'
