@@ -12,6 +12,10 @@ jobs:
       matrix:
         perl-version:
         - '5.36'
+        include:
+        - perl-version: '5.36'
+          os: ubuntu-latest
+          coverage: true
 
     container:
       image: perldocker/perl-tester:${{ matrix.perl-version }}
@@ -39,6 +43,14 @@ jobs:
 
     - name: 'Test'
       run: prove -wlvmb t
+
+    - name: 'Test with coverage'
+      if: ${{ matrix.coverage }}
+      env:
+        GITHUB_TOKEN: ${{ secretes.GITHUB_TOKEN }}
+      run: |
+        cpanm -n Devel::Cover::Report::Coveralls
+        cover -test -report Coveralls
 
   mac:
     runs-on: macos-latest
