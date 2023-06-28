@@ -7,15 +7,37 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  linux:
     runs-on: ubuntu-latest
-    name: 'dzil build'
+    strategy:
+      fail-fast: false
+      matrix:
+        perl-version:
+        - '5.36'
+        - '5.34'
+        - '5.14'
+
+    container:
+      image: perldocker/perl-tester:${{ matrix.perl-version }}
+
     steps:
-    - name: 'check out repository'
+    - name: 'Check out repository'
       uses: actions/checkout@v3
-    - name: 'installing dependencies'
-      uses: 'jonasbn/github-action-perl-dist-zilla@0.4.0'
       with:
-        dzil-arguments: 'build'
-    - run: prove -l
+        submodules: recursive
+
+    - name: 'Perl version'
+      run: perl -V
+
+    - name: 'Installing dependencies'
+      run: cpanm --notest --installdeps --verbose .
+
+    - name: 'Build'
+      run: perl Makefile.PL
+      run: make
+
+    - name: 'Test'
+      run: prove -wlvmb t
+
+
     
