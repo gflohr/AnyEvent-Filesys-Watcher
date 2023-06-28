@@ -1,4 +1,4 @@
-use Test::More tests => 11;
+use Test::More;
 
 use strict;
 use warnings;
@@ -74,3 +74,5 @@ SKIP: {
 }
 
 ok(1, '... arrived');
+
+done_testing;
