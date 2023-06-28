@@ -1,4 +1,4 @@
-name: Perl with Dist::Zilla CI (Linux)
+name: CI for Pushes 
 
 on:
   push:
@@ -32,12 +32,12 @@ jobs:
     - name: 'Installing dependencies'
       run: cpanm --notest --installdeps --verbose .
 
-    - name: 'Build'
+    - name: 'Prepare build'
       run: perl Makefile.PL
+
+    -name: 'Build'
       run: make
 
     - name: 'Test'
       run: prove -wlvmb t
 
-
-    
