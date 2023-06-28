@@ -37,7 +37,7 @@ jobs:
       run: cpanm --notest --installdeps --verbose .
 
     - name: 'Install Linux::Inotify2'
-      id: os == 'linux-latest'
+      if: os == 'linux-latest'
       run: cpanm --notest Linux::Inotify2
 
     - name: 'Install Mac::FSEvents'
