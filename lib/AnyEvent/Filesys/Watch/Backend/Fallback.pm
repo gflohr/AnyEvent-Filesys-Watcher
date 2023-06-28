@@ -1,5 +1,7 @@
 package AnyEvent::Filesys::Watch::Backend::Fallback;
 
+use strict;
+
 use AnyEvent;
 
 sub new {

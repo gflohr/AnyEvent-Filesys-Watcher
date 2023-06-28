@@ -1,5 +1,7 @@
 package AnyEvent::Filesys::Watch::Backend::FSEvents;
 
+use strict;
+
 use AnyEvent;
 use Mac::FSEvents;
 
