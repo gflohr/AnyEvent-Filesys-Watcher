@@ -11,7 +11,7 @@ jobs:
       fail-fast: false
       matrix:
         perl-version:
-        - '5.36'
+        - 'latest'
 
     container:
       image: perldocker/perl-tester:${{ matrix.perl-version }}
@@ -26,7 +26,10 @@ jobs:
       run: perl -V
 
     - name: 'Installing dependencies'
-      run: cpanm --notest --installdeps --verbose . Linux::Inotify2
+      run: cpanm --notest --installdeps --verbose .
+
+    - name: 'Install backend'
+      run: cpanm --notest -Linux::Inotify2
 
     - name: 'Prepare build'
       run: perl Makefile.PL
@@ -41,6 +44,8 @@ jobs:
     runs-on: macos-latest
     strategy:
       fail-fast: false
+      matrix:
+        perl-version: 'latest'
 
     steps:
     - name: 'Check out repository'
@@ -51,11 +56,19 @@ jobs:
     - name: 'Perl version'
       run: perl -V
 
+    - name: Set up perl
+      uses: shogo82148/actions-setup-perl@v1
+      with:
+        perl-version: ${{ matrix.perl }}
+
     - name: 'Installing dependencies'
-      run: cpanm --notest --installdeps --verbose . IO::KQueue
+      run: cpanm --notest --installdeps --verbose
 
     - name: 'Installing Mac::FSEvents'
       run: git clone https://github.com/skaji/Mac-FSEvents.git && cd Mac-FSEvents && perl Makefile.PL && make && make install && cd .. && rm -rf Mac-FSEvents
+
+    - name: 'Install IO::KQueue'
+      run: cpanm --notest IO::KQueue
 
     - name: 'Prepare build'
       run: perl Makefile.PL
@@ -71,6 +84,8 @@ jobs:
     runs-on: windows-latest
     strategy:
       fail-fast: false
+      matrix:
+        perl-version: 'latest'
 
     steps:
     - name: 'Check out repository'
@@ -81,8 +96,13 @@ jobs:
     - name: 'Perl version'
       run: perl -V
 
+    - name: Set up perl
+      uses: shogo82148/actions-setup-perl@v1
+      with:
+        perl-version: ${{ matrix.perl }}
+
     - name: 'Installing dependencies'
-      run: cpanm --notest --installdeps --verbose . IO::KQueue
+      run: cpanm --notest --installdeps --verbose
 
     - name: 'Prepare build'
       run: perl Makefile.PL
