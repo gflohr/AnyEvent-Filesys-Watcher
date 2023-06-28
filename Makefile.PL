@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use 5.010000;
+use 5.008;
 
 use ExtUtils::MakeMaker;
 
@@ -16,33 +16,36 @@ my %WriteMakefileArgs = (
     "ExtUtils::MakeMaker" => 0,
     "Module::Build" => "0.28"
   },
-  "DISTNAME" => "Anyevent-Filesys-Watch",
+  "DISTNAME" => "AnyEvent-Filesys-Watch",
   "LICENSE" => "unrestricted",
-  "MIN_PERL_VERSION" => "5.010000",
-  "NAME" => "Anyevent::Filesys::Watch",
+  "MIN_PERL_VERSION" => "5.008",
+  "NAME" => "AnyEvent::Filesys::Watch",
   "PREREQ_PM" => {
     "AnyEvent" => 0,
     "Carp" => 0,
+    "Cwd" => 0,
     "IO::KQueue" => 0,
     "Linux::Inotify2" => 0,
     "Locale::TextDomain" => 0,
     "Mac::FSEvents" => 0,
-    "Moo::Role" => 0,
-    "MooX::late" => 0,
     "Path::Iterator::Rule" => 0,
-    "namespace::autoclean" => 0,
+    "Scalar::Util" => 0,
     "strict" => 0
   },
   "TEST_REQUIRES" => {
-    "AnyEvent::Filesys::Watch::Event" => 0,
     "AnyEvent::Impl::Perl" => 0,
     "Data::Dump" => 0,
+    "Exporter" => 0,
+    "File::Basename" => 0,
+    "File::Copy" => 0,
     "File::Find" => 0,
+    "File::Path" => 0,
     "File::Spec" => 0,
+    "File::Temp" => 0,
     "Test::Exception" => "0.43",
     "Test::More" => 0,
     "Test::Without::Module" => "0.21",
-    "TestSupport" => 0,
+    "autodie" => 0,
     "lib" => 0,
     "warnings" => 0
   },
@@ -55,26 +58,29 @@ my %WriteMakefileArgs = (
 
 my %FallbackPrereqs = (
   "AnyEvent" => 0,
-  "AnyEvent::Filesys::Watch::Event" => 0,
   "AnyEvent::Impl::Perl" => 0,
   "Carp" => 0,
+  "Cwd" => 0,
   "Data::Dump" => 0,
+  "Exporter" => 0,
+  "File::Basename" => 0,
+  "File::Copy" => 0,
   "File::Find" => 0,
+  "File::Path" => 0,
   "File::Spec" => 0,
+  "File::Temp" => 0,
   "IO::KQueue" => 0,
   "Linux::Inotify2" => 0,
   "Locale::TextDomain" => 0,
   "Mac::FSEvents" => 0,
   "Module::Build" => "0.28",
-  "Moo::Role" => 0,
-  "MooX::late" => 0,
   "Path::Iterator::Rule" => 0,
+  "Scalar::Util" => 0,
   "Test::Exception" => "0.43",
   "Test::More" => 0,
   "Test::Without::Module" => "0.21",
-  "TestSupport" => 0,
+  "autodie" => 0,
   "lib" => 0,
-  "namespace::autoclean" => 0,
   "strict" => 0,
   "warnings" => 0
 );
