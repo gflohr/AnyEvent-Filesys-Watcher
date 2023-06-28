@@ -1,0 +1,21 @@
+name: Perl with Dist::Zilla CI (Linux)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: 'dzil build'
+    steps:
+    - name: 'check out repository'
+      uses: actions/checkout@v3
+    - name: 'installing dependencies'
+      uses: 'jonasbn/github-action-perl-dist-zilla@0.4.0'
+      with:
+        dzil-arguments: 'build'
+    - run: prove -l
+    
