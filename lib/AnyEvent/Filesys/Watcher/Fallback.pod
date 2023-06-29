@@ -1,10 +1,10 @@
 =head1 NAME
 
-AnyEvent::Filesys::Watcher::Backend::Fallback - Fallback file system watcher
+AnyEvent::Filesys::Watcher::Fallback - Fallback file system watcher
 
 =head1 SYNOPSIS
 
-	die "AnyEvent::Filesys::Watcher::Backend::Fallback should not be used"
+	die "AnyEvent::Filesys::Watcher::Fallback should not be used"
 	    . " directly. Use AnyEvent::Filesys::Watcher instead";
 
 =head1 DESCRIPTION

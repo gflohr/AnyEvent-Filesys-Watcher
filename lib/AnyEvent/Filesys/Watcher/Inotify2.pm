@@ -1,4 +1,4 @@
-package AnyEvent::Filesys::Watcher::Backend::Inotify2;
+package AnyEvent::Filesys::Watcher::Inotify2;
 
 use strict;
 

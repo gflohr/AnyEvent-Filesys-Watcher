@@ -14,11 +14,46 @@ use Cwd qw(abs_path);
 
 use AnyEvent::Filesys::Watcher::Event;
 
+# This constructor is kind of doing reversed inheritance.  It first sets up
+# the module, then selects a backend which is then instantiated.  The
+# backend is expected to invoke the protected constructor _new() below.
+#
+# Using the factory pattern would be the cleaner approach but we want to
+# retain a certain compatibility with the original AnyEvent::Filesys::Notify,
+# because the module is easier to use that way.
 sub new {
 	my ($class, %args) = @_;
 
-	my $self = {};
-	bless $self, $class;
+	my $backend_class = delete $args{backend};
+
+	if ($backend_class) {
+		# Use the AEFW::Backend prefix unless the backend starts with a plus.
+		unless ($backend_class =~ s/^\+//) {
+			$backend_class = "AnyEvent::Filesys::Watcher::"
+				. $backend_class;
+		}
+	} elsif ($^O eq 'linux') {
+		$backend_class = 'AnyEvent::Filesys::Watcher::Inotify2';
+	} elsif ($^O eq 'darwin') {
+		$backend_class = "AnyEvent::Filesys::Watcher::FSEvents";
+	} elsif ($^O =~ /bsd/) {
+		$backend_class = "AnyEvent::Filesys::Watcher::KQueue";
+	} else {
+		$backend_class = "AnyEvent::Filesys::Watcher::Fallback";
+	}
+
+	my $backend_module = $backend_class . '.pm';
+	$backend_module =~ s{::}{/}g;
+
+	require $backend_module;
+
+	return $backend_class->new(%args);
+}
+
+sub _new {
+	my ($class, %args) = @_;
+
+	my $self = bless {}, $class;
 
 	my @required = qw(directories callback);
 	foreach my $required (@required) {
@@ -46,17 +81,7 @@ sub new {
 
 	$self->_oldFilesystem($self->_scanFilesystem($self->directories));
 
-	$self->__loadBackend;
-
 	return $self;
-}
-
-sub backend {
-	shift->{__backend};
-}
-
-sub backendClass {
-	shift->{__backend_class};
 }
 
 sub directories {
@@ -174,6 +199,16 @@ sub _filesystemMonitor {
 	return $self->{__filesystem_monitor};
 }
 
+sub _watcher {
+	my ($self, $watcher) = @_;
+
+	if (@_ > 1) {
+		$self->{__watcher} = $watcher;
+	}
+
+	return $self->{__watcher};
+}
+
 sub _processEvents {
 	my ($self, @raw_events) = @_;
 
@@ -245,38 +280,6 @@ sub __compileFilter {
 	}
 
 	return $filter;
-}
-
-sub __loadBackend {
-	my ($self) = @_;
-
-	my $backend_class;
-
-	if ($self->backend) {
-		# Use the AEFW::Backend prefix unless the backend starts with a +
-		my $prefix  = "AnyEvent::Filesys::Watcher::Backend::";
-		$backend_class = $self->backend;
-		$backend_class = $prefix . $backend_class
-			unless $backend_class =~ s{^\+}{};
-	} elsif ($^O eq 'linux') {
-		$backend_class = 'AnyEvent::Filesys::Watcher::Backend::Inotify2';
-	} elsif ($^O eq 'darwin') {
-		$backend_class = "AnyEvent::Filesys::Watcher::Backend::FSEvents";
-	} elsif ($^O =~ /bsd/) {
-		$backend_class = "AnyEvent::Filesys::Watcher::Backend::KQueue";
-	} else {
-		$backend_class = "AnyEvent::Filesys::Watcher::Backend::Fallback";
-	}
-
-	$self->{__backend_class} = $backend_class;
-
-	my $backend_module = $backend_class . '.pm';
-	$backend_module =~ s{::}{/}g;
-
-	require $backend_module;
-	$self->{__watcher} = $backend_class->new($self);
-
-	return $self;
 }
 
 # Originally taken from Filesys::Notify::Simple --Thanks Miyagawa

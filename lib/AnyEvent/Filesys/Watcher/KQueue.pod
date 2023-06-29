@@ -1,16 +1,16 @@
 =head1 NAME
 
-AnyEvent::Filesys::Watcher::Backend::FSEvents - MacOS file system watcher
+AnyEvent::Filesys::Watcher::KQueue - BSD file system watcher
 
 =head1 SYNOPSIS
 
-	die "AnyEvent::Filesys::Watcher::Backend::FSEvents should not be used"
+	die "AnyEvent::Filesys::Watcher::KQueue should not be used"
 	    . " directly. Use AnyEvent::Filesys::Watcher instead";
 
 =head1 DESCRIPTION
 
-This is the Mac OS backend for L<AnyEvent::Filesys::Watcher>.  It uses
-L<Mac::FSEvents> internally.
+This is the Linux backend for L<AnyEvent::Filesys::Watcher>.  It uses
+L<IO::KQueue> internally.
 
 =head1 CONSTRUCTORS
 
@@ -27,4 +27,4 @@ L<AnyEvent::Filesys::Watcher>.
 
 =head1 SEE ALSO
 
-L<Mac::FSEvents>, L<AnyEvent::Filesys::Watcher>, perl(1)
+L<IO::KQueue>, L<AnyEvent::Filesys::Watcher>, perl(1)
