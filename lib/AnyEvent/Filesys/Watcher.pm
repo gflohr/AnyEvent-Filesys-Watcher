@@ -24,7 +24,7 @@ use AnyEvent::Filesys::Watcher::Event;
 sub new {
 	my ($class, %args) = @_;
 
-	my $backend_class = delete $args{backend};
+	my $backend_class = $args{backend};
 
 	if ($backend_class) {
 		# Use the AEFW:: prefix unless the backend starts with a plus.
@@ -45,9 +45,23 @@ sub new {
 	my $backend_module = $backend_class . '.pm';
 	$backend_module =~ s{::}{/}g;
 
-	require $backend_module;
+	my $self;
+	eval {
+		require $backend_module;
+		$self = $backend_class->new(%args);
+	};
+	if ($@) {
+		# Explicitely requested?
+		if (exists $args{backend}
+		|| 'AnyEvent::Filesys::Watcher::Fallback' eq $backend_class) {
+			die $@ if exists $args{backend};
+		}
 
-	return $backend_class->new(%args);
+		require AnyEvent::Filesys::Watcher::Fallback;
+		$self = AnyEvent::Filesys::Watcher::Fallback->new(%args);
+	}
+
+	return $self;
 }
 
 sub _new {

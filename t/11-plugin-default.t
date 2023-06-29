@@ -16,15 +16,21 @@ isa_ok $w, 'AnyEvent::Filesys::Watcher';
 isa_ok $w, 'AnyEvent::Filesys::Watcher::Fallback',  '... Fallback';
 
 SKIP: {
-	skip 'Test for Mac/Linux/BSD only', 1
-		unless $^O eq 'linux'
-		or $^O eq 'darwin'
-		or $^O =~ /bsd/;
-
+	my $backend;
+	if ('linux' eq $^O) {
+		$backend = 'Inotify2';
+	} elsif ('darwin' eq $^O) {
+		$backend = 'FSEvents';
+	} elsif ($^O =~ /bsd/i) {
+		$backend = 'KQueue';
+	} else {
+		skip 'Test for Mac/Linux/BSD only', 1;
+	}
 	throws_ok {
 		AnyEvent::Filesys::Watcher->new(
 			directories => ['t'],
-			callback => sub { }
+			callback => sub { },
+			backend => $backend,
 		);
 	}
 	qr/you may need to install the [_0-9a-zA-Z:]+ module/, 'fails ok';
