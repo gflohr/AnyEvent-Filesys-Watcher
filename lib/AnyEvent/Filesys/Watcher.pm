@@ -14,6 +14,10 @@ use Cwd qw(abs_path);
 
 use AnyEvent::Filesys::Watcher::Event;
 
+# We remember which modules we have already unsuccessfully required
+# so that we can avoid the "Attempt to reload xyz.pm aborted".
+my %losers;
+
 # This constructor is kind of doing reversed inheritance.  It first sets up
 # the module, then selects a backend which is then instantiated.  The
 # backend is expected to invoke the protected constructor _new() below.
@@ -24,7 +28,7 @@ use AnyEvent::Filesys::Watcher::Event;
 sub new {
 	my ($class, %args) = @_;
 
-	my $backend_class = delete $args{backend};
+	my $backend_class = $args{backend};
 
 	if ($backend_class) {
 		# Use the AEFW:: prefix unless the backend starts with a plus.
@@ -45,9 +49,31 @@ sub new {
 	my $backend_module = $backend_class . '.pm';
 	$backend_module =~ s{::}{/}g;
 
-	require $backend_module;
+	my $self;
+	eval {
+		if (exists $losers{$backend_module}) {
+			die $losers{$backend_module};
+		} else {
+			require $backend_module;
+			$self = $backend_class->new(%args);
+		}
+	};
+	if ($@) {
+		# Remember the exception so that we can re-throw it in case an attempt
+		# is made to require the same module again.
+		$losers{$backend_module} = $@;
 
-	return $backend_class->new(%args);
+		# Explicitely requested?
+		if (exists $args{backend}
+		    || 'AnyEvent::Filesys::Watcher::Fallback' eq $backend_class) {
+			die $@ if exists $args{backend};
+		}
+
+		require AnyEvent::Filesys::Watcher::Fallback;
+		$self = AnyEvent::Filesys::Watcher::Fallback->new(%args);
+	}
+
+	return $self;
 }
 
 sub _new {

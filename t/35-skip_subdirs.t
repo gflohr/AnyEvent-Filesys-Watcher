@@ -12,6 +12,24 @@ use TestSupport qw(create_test_files delete_test_files move_test_files
 use AnyEvent::Filesys::Watcher;
 use AnyEvent::Impl::Perl;
 
+my $no_backend;
+
+BEGIN {
+	my $module;
+	if ($^O eq 'linux') {
+		$module = 'Linux/Inotify2.pm';
+	} elsif ($^O eq 'darwin') {
+		$module = 'Mac::FSEvents';
+	} elsif ($^O =~ /bsd/i) {
+		$module = 'IO::KQueue';
+	}
+
+	if ($module) {
+		eval { require $module };
+		$no_backend = $@;
+	}
+}
+
 create_test_files(qw(one/1 two/1 one/sub/1));
 
 my $n = AnyEvent::Filesys::Watcher->new(
@@ -24,6 +42,8 @@ isa_ok($n, 'AnyEvent::Filesys::Watcher');
 SKIP: {
 	skip "not sure which os we are on", 1
 		unless $^O =~ /linux|darwin|bsd/;
+	skip "no os-specific backend installed" if $no_backend;
+
 	isa_ok($n, 'AnyEvent::Filesys::Watcher::Inotify2',
 		'... with the linux backend')
 		if $^O eq 'linux';

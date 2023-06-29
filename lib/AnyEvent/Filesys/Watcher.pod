@@ -43,6 +43,10 @@ L<AnyEvent::Filesys::Watcher::FSEvents>,
 L<AnyEvent::Filesys::Watcher::INotify2>,
 L<AnyEvent::Filesys::Watcher::KQueue> that all inherit from this module.
 
+If the instantiation of the subclass fails, an instance of
+L<AnyEvent::Filesys::Watcher::Fallback> is returned unless a specific backend
+was explicitely requested with the constructor argument "backend" (see below).
+
 B<OPTIONS> is a hash of named options:
 
 =over 8
@@ -107,10 +111,11 @@ particular, the Inotify2 backend will generate an additional
 'modified' event when a file changes (once when opened for write,
 and once when modified).
 
-=item <skip_subdirectories BOOLEAN>
+=item B<skip_subdirectories BOOLEAN>
 
 Skips subdirectories and anything in them while building a list of
 files/dirs to watch. Optional.
+
 
 =back
 

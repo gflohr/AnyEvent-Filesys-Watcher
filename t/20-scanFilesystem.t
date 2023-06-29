@@ -52,7 +52,7 @@ is( @events, 3, '_diffFilesystem: got create dir events' ) or diag ddx @events;
 is( $_->type, 'deleted', '... correct type' ) for @events;
 
 SKIP: {
-	skip "attribute changes not available on Windows", 3
+	skip "attribute changes not available on MS-DOS", 3
 		if $^O eq 'MSWin32';
 
 	$old_fs = $new_fs;

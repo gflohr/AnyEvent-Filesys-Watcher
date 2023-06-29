@@ -1,10 +1,26 @@
-use Test::More tests => 11;
+use Test::More;
 
 use strict;
 use warnings;
 use File::Spec;
 use lib 't/lib';
 $|++;
+
+BEGIN {
+	my $module;
+	if ($^O eq 'linux') {
+		$module = 'Linux/Inotify2.pm';
+	} elsif ($^O eq 'darwin') {
+		$module = 'Mac::FSEvents';
+	} elsif ($^O =~ /bsd/i) {
+		$module = 'IO::KQueue';
+	}
+
+	if ($module) {
+		eval { require $module };
+		plan skip_all => 'no os-specific backend installed' if $@;
+	}
+}
 
 use TestSupport qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event);
@@ -26,7 +42,7 @@ isa_ok($n, 'AnyEvent::Filesys::Watcher' );
 
 SKIP: {
 	skip "not sure which os we are on", 1
-		unless $^O =~ /linux|darwin|bsd/;
+		unless $^O =~ /linux|darwin|bsd/i;
 	isa_ok($n, 'AnyEvent::Filesys::Watcher::Inotify2',
 		'... with the linux backend')
 		if $^O eq 'linux';
@@ -85,3 +101,4 @@ received_events(sub { create_test_files(qw(one/onlyme one/4)) },
 
 ok(1, '... arrived' );
 
+done_testing;
