@@ -1,4 +1,4 @@
-package AnyEvent::Filesys::Watcher::Backend::Inotify2;
+package AnyEvent::Filesys::Watcher::Inotify2;
 
 use strict;
 
@@ -9,15 +9,19 @@ use Linux::Inotify2;
 use Carp;
 use Path::Iterator::Rule;
 
+use base qw(AnyEvent::Filesys::Watcher);
+
 sub new {
-	my ($class, $watch) = @_;
+	my ($class, %args) = @_;
+
+	my $self = $class->SUPER::_new(%args);
 
 	my $inotify = Linux::Inotify2->new
 		or croak "Unable to create new Linux::INotify2 object: $!";
 
 	# Need to add all the subdirs to the watch list, this will catch
 	# modifications to files too.
-	my $old_fs = $watch->_oldFilesystem;
+	my $old_fs = $self->_oldFilesystem;
 	my @dirs = grep { $old_fs->{$_}->{is_directory} } keys %$old_fs;
 
 	for my $dir (@dirs) {
@@ -25,19 +29,19 @@ sub new {
 			$dir,
 			IN_MODIFY | IN_CREATE | IN_DELETE | IN_DELETE_SELF |
 				IN_MOVE | IN_MOVE_SELF | IN_ATTRIB,
-			sub { my $e = shift; $watch->_processEvents($e); }
+			sub { my $e = shift; $self->_processEvents($e); }
 		);
 	}
 
-	$watch->_filesystemMonitor($inotify);
+	$self->_filesystemMonitor($inotify);
 
-	my $self = [AnyEvent->io(
+	$self->_watcher([AnyEvent->io(
 		fh => $inotify->fileno,
 		poll => 'r',
 		cb => sub {
 			$inotify->poll;
 		}
-	)];
+	)]);
 
 	bless $self, $class;
 }
@@ -53,7 +57,7 @@ sub new {
 # Because of these differences, we default to the original behavior unless the
 # parse_events flag is true.
 sub _parseEvents {
-	my ($self, $watch, $filter_cb, @raw_events) = @_;
+	my ($self, $filter_cb, @raw_events) = @_;
 
 	my @events =
 		map { $filter_cb->($_) }
@@ -61,13 +65,13 @@ sub _parseEvents {
 		map { $self->__makeEvent($_) } @raw_events;
 
 	# New directories are not automatically watched by inotify.
-	$self->__addEventsToWatch($watch, @events);
+	$self->__addEventsToWatch(@events);
 
 	# Any entities that were created in new dirs (before the call to
 	# _add_events_to_watch) will have been missed. So we walk the filesystem
 	# now.
 	push @events,
-		map { $self->__addEntitiesInSubdir($watch, $filter_cb, $_) }
+		map { $self->__addEntitiesInSubdir($filter_cb, $_) }
 		grep { $_->isDirectory && $_->isCreated }
 		@events;
 
@@ -75,7 +79,7 @@ sub _parseEvents {
 }
 
 sub __addEntitiesInSubdir {
-	my ($self, $watch, $filter_cb, $e) = @_;
+	my ($self, $filter_cb, $e) = @_;
 	my @events;
 
 	my $rule = Path::Iterator::Rule->new;
@@ -90,7 +94,7 @@ sub __addEntitiesInSubdir {
 		);
 
 		next unless $filter_cb->($new_event);
-		$self->__addEventsToWatch($watch, $new_event);
+		$self->__addEventsToWatch($new_event);
 		push @events, $new_event;
 	}
 
@@ -118,21 +122,21 @@ sub __makeEvent {
 
 # Needed if `parse_events => 0`
 sub _postProcessEvents {
-	my ($self, $watch, @events) = @_;
-	return $self->__addEventsToWatch($watch, @events);
+	my ($self, @events) = @_;
+	return $self->__addEventsToWatch(@events);
 }
 
 sub __addEventsToWatch {
-	my ($self, $watch, @events) = @_;
+	my ($self, @events) = @_;
 
 	for my $event (@events) {
 	next unless $event->isDirectory && $event->isCreated;
 
-	$watch->_filesystemMonitor->watch(
+	$self->_filesystemMonitor->watch(
 		$event->path,
 		IN_MODIFY | IN_CREATE | IN_DELETE | IN_DELETE_SELF |
 			IN_MOVE | IN_MOVE_SELF | IN_ATTRIB,
-		sub { my $e = shift; $watch->_processEvents($e); });
+		sub { my $e = shift; $self->_processEvents($e); });
 	}
 
 	return;

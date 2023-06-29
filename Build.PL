@@ -30,6 +30,7 @@ my %module_build_args = (
     "Locale::TextDomain" => 0,
     "Path::Iterator::Rule" => 0,
     "Scalar::Util" => 0,
+    "base" => 0,
     "perl" => "5.008",
     "strict" => 0
   },

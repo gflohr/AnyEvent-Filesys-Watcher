@@ -1,5 +1,5 @@
 use Test::More;
-use Test::Exception;
+
 use strict;
 use warnings;
 
@@ -8,8 +8,9 @@ use AnyEvent::Filesys::Watcher;
 my $AEFW = 'AnyEvent::Filesys::Watcher';
 
 subtest 'Try to load the correct backend for this O/S' => sub {
-	if  ($^O eq 'linux' and eval { require Linux::Inotify2; 1 }) {
-		my $w = AnyEvent::Filesys::Watcher->new (
+	if ($^O eq 'linux' and eval { require Linux::Inotify2; 1 }) {
+		require AnyEvent::Filesys::Watcher::Inotify2;
+		my $w = AnyEvent::Filesys::Watcher::Inotify2->new (
 			directories => ['t'],
 			callback => sub { }
 		);
@@ -20,7 +21,8 @@ subtest 'Try to load the correct backend for this O/S' => sub {
 			require Mac::FSEvents;
 			1;
 		}) {
-		my $w = AnyEvent::Filesys::Watcher->new (
+		require AnyEvent::Filesys::Watcher::FSEvents;
+		my $w = AnyEvent::Filesys::Watcher::FSEvents->new (
 			directories => ['t'],
 			callback => sub { }
 		);
@@ -31,7 +33,8 @@ subtest 'Try to load the correct backend for this O/S' => sub {
 			require IO::KQueue;
 			1;
 		}) {
-		my $w = AnyEvent::Filesys::Watcher->new (
+		require AnyEvent::Filesys::Watcher::KQueue;
+		my $w = AnyEvent::Filesys::Watcher::KQueue->new (
 			directories => ['t'],
 			callback => sub { }
 		);
@@ -42,38 +45,19 @@ subtest 'Try to load the correct backend for this O/S' => sub {
 			directories => ['t'],
 			callback => sub { }
 		);
+		require AnyEvent::Filesys::Watcher::Fallback;
 		isa_ok $w, "${AEFW}::Fallback", 'Fallback';
 		isa_ok $w, "${AEFW}", 'parent class';
 	}
 };
 
-subtest 'Try to specify Fallback via the backend argument' => sub {
-	my $w = AnyEvent::Filesys::Watcher->new(
-		directories => ['t'],
-		callback => sub { },
-		backend => 'Fallback',
-	);
-	isa_ok $w, "${AEFW}::Fallback", '... Fallback';
-	isa_ok $w, $AEFW, 'parent class';
-};
-
-subtest 'Try to specify +AEFW::Fallback via the backend argument' => sub {
-	my $w = AnyEvent::Filesys::Watcher->new(
-		directories => ['t'],
-		callback => sub { },
-		backend => "+${AEFW}::Fallback",
-	);
-	isa_ok $w, "${AEFW}::Fallback", '... Fallback';
-	isa_ok $w, $AEFW, 'parent class';
-};
-
 if ($^O eq 'darwin' and eval { require IO::KQueue; 1; }) {
 	subtest 'Try to force KQueue on Mac with IO::KQueue installed' => sub {
 		my $w = eval {
-			AnyEvent::Filesys::Watcher->new(
+			require AnyEvent::Filesys::Watcher::KQueue;
+			AnyEvent::Filesys::Watcher::KQueue->new(
 				directories => ['t'],
 				callback => sub { },
-				backend => 'KQueue'
 			);
 		};
 		my $x = $@ || 'no exception';

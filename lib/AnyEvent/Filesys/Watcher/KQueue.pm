@@ -1,4 +1,4 @@
-package AnyEvent::Filesys::Watcher::Backend::KQueue;
+package AnyEvent::Filesys::Watcher::KQueue;
 
 use strict;
 
@@ -8,11 +8,29 @@ use Errno qw(:POSIX);
 
 use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
 
-# Arbitrary limit on open filehandles before issuing a warning
-our $WARN_FILEHANDLE_LIMIT = 50;
+use base qw(AnyEvent::Filesys::Watcher);
+
+# Arbitrary default limit on open filehandles before we issue a warning.
+our $WARN_FILEHANDLE_LIMIT = 128;
+
+# And now try to be more accurate.
+eval {
+	require BSD::Resource;
+
+	my $rlimits = BSD::Resource::get_rlimits();
+	foreach my $resource (qw(RLIMIT_NOFILE RLIMIT_OFILE RLIMIT_OPEN_MAX)) {
+		if (exists $rlimits->{$resource}) {
+			my ($limit) = BSD::Resource::getrlimit($resource);
+			$WARN_FILEHANDLE_LIMIT = $limit >> 1;
+			last;
+		}
+	}
+};
 
 sub new {
-	my ($class, $watch) = @_;
+	my ($class, %args) = @_;
+
+	my $self = $class->SUPER::_new(%args);
 
 	my $kqueue = IO::KQueue->new;
 	if (!$kqueue) {
@@ -22,21 +40,22 @@ sub new {
 			    error => $!)
 		);
 	}
-	$watch->_filesystemMonitor($kqueue);
+	$self->_filesystemMonitor($kqueue);
 
 	# Need to add all the subdirs to the watch list, this will catch
 	# modifications to files too.
-	my $old_fs = $watch->_oldFilesystem;
+	my $old_fs = $self->_oldFilesystem;
 	my @paths  = keys %$old_fs;
 
 	my $fhs = {};
-	my $self = bless {
+	my $watcher = {
 		fhs => $fhs,
-	}, $class;
+	};
+	$self->_watcher($watcher);
 
 	# Add each file and each directory to a hash of path => fh
 	for my $path (@paths) {
-		my $fh = $self->__watch($watch, $path);
+		my $fh = $self->__watch($path);
 		$fhs->{$path} = $fh if defined $fh;
 	}
 
@@ -44,10 +63,10 @@ sub new {
 	my $w;
 	$w = AE::io $$kqueue, 0, sub {
 		if (my @events = $kqueue->kevent) {
-			$watch->_processEvents(@events);
+			$self->_processEvents(@events);
 		}
 	};
-	$self->{w} = $w;
+	$watcher->{w} = $w;
 
 	$self->_checkFilehandleCount;
 
@@ -59,11 +78,11 @@ sub new {
 # won't deleted it.  This is done after filtering. So entire dirs can be
 # ignored efficiently.
 sub _postProcessEvents {
-	my ($self, $watch, @events) = @_;
+	my ($self, @events) = @_;
 
 	for my $event (@events) {
 		if ($event->isCreated) {
-			my $fh = $self->__watch($watch, $event->path);
+			my $fh = $self->__watch($event->path);
 			$self->{fhs}->{$event->path} = $fh if defined $fh;
 		} elsif ($event->isDeleted) {
 			delete $self->{fhs}->{$event->path};
@@ -76,7 +95,7 @@ sub _postProcessEvents {
 }
 
 sub __watch {
-	my ($self, $watch, $path) = @_;
+	my ($self, $path) = @_;
 
 	open my $fh, '<', $path or do {
 		if ($! == EMFILE) {
@@ -94,7 +113,7 @@ EOF
 		);
 	};
 
-	$watch->_filesystemMonitor->EV_SET(
+	$self->_filesystemMonitor->EV_SET(
 		fileno($fh),
 		EVFILT_VNODE,
 		EV_ADD | EV_ENABLE | EV_CLEAR,
@@ -123,7 +142,9 @@ EOF
 
 sub _watcherCount {
 	my ($self) = @_;
-	my $fhs = $self->{fhs};
+
+	my $fhs = $self->_watcher->{fhs};
+
 	return scalar keys %$fhs;
 }
 

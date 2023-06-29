@@ -27,6 +27,7 @@ my %WriteMakefileArgs = (
     "Locale::TextDomain" => 0,
     "Path::Iterator::Rule" => 0,
     "Scalar::Util" => 0,
+    "base" => 0,
     "strict" => 0
   },
   "TEST_REQUIRES" => {
@@ -74,6 +75,7 @@ my %FallbackPrereqs = (
   "Test::More" => 0,
   "Test::Without::Module" => "0.21",
   "autodie" => 0,
+  "base" => 0,
   "lib" => 0,
   "strict" => 0,
   "warnings" => 0
@@ -90,14 +92,17 @@ delete $WriteMakefileArgs{CONFIGURE_REQUIRES}
   unless eval { ExtUtils::MakeMaker->VERSION(6.52) };
 
 if ( $^O eq 'linux' ) {
+	$WriteMakefileArgs{PREREQ_PM}{'BSD::Resource'} = $FallbackPrereqs{'BSD::Resource'} = '1.2911';
 	$WriteMakefileArgs{PREREQ_PM}{'Linux::Inotify'} = $FallbackPrereqs{'Linux::Inotify'} = '1.22';
 }
 
 if ( $^O eq 'darwin' ) {
+	$WriteMakefileArgs{PREREQ_PM}{'BSD::Resource'} = $FallbackPrereqs{'BSD::Resource'} = '1.2911';
 	$WriteMakefileArgs{PREREQ_PM}{'Mac::FSEvents'} = $FallbackPrereqs{'Mac::FSEvents'} = '0.10';
 }
 
 if ( $^O =~ /bsd/i ) {
+	$WriteMakefileArgs{PREREQ_PM}{'BSD::Resource'} = $FallbackPrereqs{'BSD::Resource'} = '1.2911';
 	$WriteMakefileArgs{PREREQ_PM}{'IO::KQueue'} = $FallbackPrereqs{'IO::KQueue'} = '0.34';
 }
 
