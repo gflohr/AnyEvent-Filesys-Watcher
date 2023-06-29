@@ -20,7 +20,7 @@ create_test_files(qw(one/sub/1));
 my $n = AnyEvent::Filesys::Watcher->new(
 	directories => [ map { File::Spec->catfile($dir, $_) } qw(one two) ],
 	interval => 0.5,
-	filter => sub { shift !~ qr/ignoreme/ },
+	filter => sub { shift !~ qr{/ignoreme$} },
 	callback => sub { receive_event(@_) },
 	backend => 'Fallback',
 );
