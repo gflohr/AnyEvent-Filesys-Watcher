@@ -32,9 +32,25 @@ B<PATH> must be the absolute path to the file that changed.  Required.
 
 B<TYPE> must be one of "created", "modified", "deleted".  Required.
 
-=item B<is_directory BOOLEAN>
+=item B<isDirectory>
 
-B<BOOLEAN> should be a truthy value for directories, false otherwise.
+Returns a truthy value if the event was triggered by a directory, false
+otherwise.
+
+=item B<isCreated>
+
+Returns a truthy value if the event was triggered by a file creation, false
+otherwise.
+
+=item B<isModified>
+
+Returns a truthy value if the event was triggered by a file modification, false
+otherwise.
+
+=item B<isDeleted>
+
+Returns a truthy value if the event was triggered by a file deletion, false
+otherwise.
 
 =back
 

@@ -53,7 +53,7 @@ This argument is required.
 
 A code reference that is called, when a modification to the monitored
 directories is deteced. The callback is passed a list of
-L<AnyEvent::Filesys::Watcher::Events.
+L<AnyEvent::Filesys::Watcher::Events>.
 
 This argument is required.
 

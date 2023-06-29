@@ -31,7 +31,7 @@ my %module_build_args = (
     "Path::Iterator::Rule" => 0,
     "Scalar::Util" => 0,
     "base" => 0,
-    "perl" => "5.008",
+    "perl" => "5.014",
     "strict" => 0
   },
   "test_requires" => {
