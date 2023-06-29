@@ -27,4 +27,14 @@ throws_ok {
 	);
 } qr/Can't locate/, 'explicitely requested';
 
+# Test that the exception was cached so that we don't produce the warning,
+# "Attempt to reload xyz.pm aborted."
+throws_ok {
+	$w = AnyEvent::Filesys::Watcher->new(
+		directories => ['t'],
+		callback => sub { },
+		backend => 'Inotify2',
+	);
+} qr/Can't locate/, 'no attempt to reload';
+
 done_testing;
