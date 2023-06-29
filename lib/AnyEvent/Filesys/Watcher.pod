@@ -57,7 +57,7 @@ This argument is required.
 
 A code reference that is called, when a modification to the monitored
 directories is deteced. The callback is passed a list of
-L<AnyEvent::Filesys::Watcher::Events.
+L<AnyEvent::Filesys::Watcher::Events>.
 
 This argument is required.
 
@@ -183,7 +183,7 @@ curious.
 
 =head1 DIFFERENCES TO AnyEvent::Filesys::Notify
 
-=item over 4
+=over 4
 
 =item The constructor argument "no_external" is ignored.
 
