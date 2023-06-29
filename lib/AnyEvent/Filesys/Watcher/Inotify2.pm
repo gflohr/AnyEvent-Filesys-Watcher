@@ -9,7 +9,7 @@ use Linux::Inotify2;
 use Carp;
 use Path::Iterator::Rule;
 
-use base AnyEvent::Filesys::Watcher;
+use base qw(AnyEvent::Filesys::Watcher);
 
 sub new {
 	my ($class, %args) = @_;

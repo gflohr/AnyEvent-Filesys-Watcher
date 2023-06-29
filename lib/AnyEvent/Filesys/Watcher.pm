@@ -219,7 +219,6 @@ sub _processEvents {
 	if ($self->parseEvents and $self->can('_parseEvents') ) {
 		@events =
 			$self->_parseEvents(
-				$self,
 				sub { $self->__applyFilter(@_) },
 				@raw_events
 			);
