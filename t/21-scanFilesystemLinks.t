@@ -5,7 +5,7 @@ use warnings;
 use lib 't/lib';
 
 use TestSupport qw(create_test_files delete_test_files $dir);
-use AnyEvent::Filesys::Watch;
+use AnyEvent::Filesys::Watcher;
 
 # Tests for RT#72849
 
@@ -19,17 +19,17 @@ symlink File::Spec->catfile($dir, 'original'),
 delete_test_files('original');
 
 # Scan it once, should be skipped on ext4
-my $old_fs = AnyEvent::Filesys::Watch->_scanFilesystem($dir);
+my $old_fs = AnyEvent::Filesys::Watcher->_scanFilesystem($dir);
 is(keys %$old_fs, 1, '_scanFilesystem: got links') or diag ddx $old_fs;
 
 # Now see if we get warnings
-my $new_fs = AnyEvent::Filesys::Watch->_scanFilesystem($dir);
+my $new_fs = AnyEvent::Filesys::Watcher->_scanFilesystem($dir);
 my @warnings_emitted = ();
 my @events = do {
 	local $SIG{__WARN__} = sub {
 		push @warnings_emitted, shift;
 	};
-	AnyEvent::Filesys::Watch->_diffFilesystem($old_fs, $new_fs);
+	AnyEvent::Filesys::Watcher->_diffFilesystem($old_fs, $new_fs);
 };
 ok(!@warnings_emitted, '... without warnings')
 	or diag join "\n", @warnings_emitted;

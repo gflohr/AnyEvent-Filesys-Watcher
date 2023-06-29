@@ -5,7 +5,7 @@
 LINGUAS = de
 
 # Textdomain for our package.
-TEXTDOMAIN = AnyEvent-Filesys-Watch
+TEXTDOMAIN = AnyEvent-Filesys-Watcher
 
 # Initial copyright holder added to pot and po files.
 COPYRIGHT_HOLDER = Guido Flohr

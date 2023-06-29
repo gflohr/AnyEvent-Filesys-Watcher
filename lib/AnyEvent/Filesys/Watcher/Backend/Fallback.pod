@@ -1,0 +1,30 @@
+=head1 NAME
+
+AnyEvent::Filesys::Watcher::Backend::Fallback - Fallback file system watcher
+
+=head1 SYNOPSIS
+
+	die "AnyEvent::Filesys::Watcher::Backend::Fallback should not be used"
+	    . " directly. Use AnyEvent::Filesys::Watcher instead";
+
+=head1 DESCRIPTION
+
+This is the fallback backend for L<AnyEvent::Filesys::Watcher>.  It checks
+the file system in short intervals.  This is, of course, quite inefficient.
+
+=head1 CONSTRUCTORS
+
+The following constructors are available:
+
+=over 4
+
+=item B<new(WATCH)>
+
+Returns the watcher backend. B<WATCH> should be the calling
+L<AnyEvent::Filesys::Watcher>.
+
+=back
+
+=head1 SEE ALSO
+
+L<AnyEvent::Filesys::Watcher>, perl(1)

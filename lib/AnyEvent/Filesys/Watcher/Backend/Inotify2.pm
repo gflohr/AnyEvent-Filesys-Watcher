@@ -1,8 +1,8 @@
-package AnyEvent::Filesys::Watch::Backend::Inotify2;
+package AnyEvent::Filesys::Watcher::Backend::Inotify2;
 
 use strict;
 
-use Locale::TextDomain ('AnyEvent-Filesys-Watch');
+use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
 
 use AnyEvent;
 use Linux::Inotify2;
@@ -83,7 +83,7 @@ sub __addEntitiesInSubdir {
 	while (my $file = $next->()) {
 		next if $file eq $e->path; # $e->path will have already been added
 
-		my $new_event = AnyEvent::Filesys::Watch::Event->new(
+		my $new_event = AnyEvent::Filesys::Watcher::Event->new(
 			path => $file,
 			type => 'created',
 			isDirectory => -d $file,
@@ -109,7 +109,7 @@ sub __makeEvent {
 	$type = 'created' if ($e->mask & (IN_CREATE | IN_MOVED_TO));
 
 	return unless $type;
-	return AnyEvent::Filesys::Watch::Event->new(
+	return AnyEvent::Filesys::Watcher::Event->new(
 		path => $e->fullname,
 		type => $type,
 		is_directory => !!$e->IN_ISDIR,

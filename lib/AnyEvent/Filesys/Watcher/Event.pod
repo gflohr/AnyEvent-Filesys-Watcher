@@ -1,16 +1,16 @@
 =head1 NAME
 
-AnyEvent::Filesys::Watch::Event - Filesystem Change Events
+AnyEvent::Filesys::Watcher::Event - Filesystem Change Events
 
 =head1 SYNOPSIS
 
-	die "AnyEvent::Filesys::Watch::Event should not be used"
-	    . " directly. Use AnyEvent::Filesys::Watch instead";
+	die "AnyEvent::Filesys::Watcher::Event should not be used"
+	    . " directly. Use AnyEvent::Filesys::Watcher instead";
 
 =head1 DESCRIPTION
 
 This class provides an abstraction for filesystem change events
-for L<AnyEvent::Filesys::Watch>.
+for L<AnyEvent::Filesys::Watcher>.
 
 =head1 CONSTRUCTORS
 
@@ -60,4 +60,4 @@ Returns a truthy value for directories, false otherwise.
 
 =head1 SEE ALSO
 
-L<AnyEvent::Filesys::Watch>, perl(1)
+L<AnyEvent::Filesys::Watcher>, perl(1)

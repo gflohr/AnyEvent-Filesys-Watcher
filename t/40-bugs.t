@@ -3,13 +3,13 @@ use Test::More tests => 2;
 use strict;
 use warnings;
 
-use AnyEvent::Filesys::Watch::Event;
+use AnyEvent::Filesys::Watcher::Event;
 
-my $e = AnyEvent::Filesys::Watch::Event->new(
+my $e = AnyEvent::Filesys::Watcher::Event->new(
 	path => 'some/path',
 	type => 'modified',
 	is_directory => undef,
 );
 
-isa_ok($e, "AnyEvent::Filesys::Watch::Event" );
+isa_ok($e, "AnyEvent::Filesys::Watcher::Event" );
 ok(!$e->isDirectory, 'isDirectory');

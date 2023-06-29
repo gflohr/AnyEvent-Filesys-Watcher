@@ -13,19 +13,19 @@ $|++;
 use TestSupport qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event);
 
-use AnyEvent::Filesys::Watch;
+use AnyEvent::Filesys::Watcher;
 use AnyEvent::Impl::Perl;
 
 create_test_files(qw(one/1 two/1));
 ## ls: one/1 two/1
 
-my $n = AnyEvent::Filesys::Watch->new(
+my $n = AnyEvent::Filesys::Watcher->new(
 	directories => [ map { File::Spec->catfile($dir, $_) } qw(one two) ],
 	filter => sub { shift !~ qr/ignoreme/ },
 	callback => sub { receive_event(@_) },
 	parse_events => 1,
 );
-isa_ok($n, 'AnyEvent::Filesys::Watch');
+isa_ok($n, 'AnyEvent::Filesys::Watcher');
 
 diag "This might take a few seconds to run...";
 

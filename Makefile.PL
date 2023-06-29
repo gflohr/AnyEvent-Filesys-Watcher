@@ -16,10 +16,10 @@ my %WriteMakefileArgs = (
     "ExtUtils::MakeMaker" => 0,
     "Module::Build" => "0.28"
   },
-  "DISTNAME" => "AnyEvent-Filesys-Watch",
+  "DISTNAME" => "AnyEvent-Filesys-Watcher",
   "LICENSE" => "unrestricted",
   "MIN_PERL_VERSION" => "5.008",
-  "NAME" => "AnyEvent::Filesys::Watch",
+  "NAME" => "AnyEvent::Filesys::Watcher",
   "PREREQ_PM" => {
     "AnyEvent" => 0,
     "Carp" => 0,
