@@ -1,0 +1,45 @@
+name: CI for Pushes on Systems Without Installed Backend
+
+on:
+  push:
+    branches: [ '*' ]
+
+jobs:
+  on-push:
+    runs-on: 'ubuntu-latest'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        perl-version:
+        - '5.36'
+
+    steps:
+    - name: 'Check out repository'
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: 'Perl version'
+      run: perl -V
+
+    - name: Set up perl
+      uses: shogo82148/actions-setup-perl@v1
+      with:
+        perl-version: ${{ matrix.perl }}
+
+    - name: 'Install other dependencies'
+      run: cpanm --notest --installdeps --verbose .
+
+    # FIXME! Once the os-specific dependencies are recognized as dependencies
+    # by cpanm, we have to uninstall Linux::Inotify2 here.
+
+    - name: 'Prepare build'
+      run: perl Makefile.PL
+
+    - name: 'Build'
+      run: make
+
+    - name: 'Test'
+      run: prove -wlmb t
+
