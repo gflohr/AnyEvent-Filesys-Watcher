@@ -31,6 +31,7 @@ t/00-base.t
 t/00-load.t
 t/10-plugins.t
 t/11-plugin-default.t
+t/12-direct-invocation.t
 t/20-scanFilesystem.t
 t/21-scanFilesystemLinks.t
 t/30-event.t
