@@ -4,7 +4,7 @@ This is a drop-in replacement for
 [AnyEvent-Filesys-Notify](https://github.com/mvgrimes/AnyEvent-Filesys-Notify)
 but with fewer dependencies.
 
-See the manual page [AnyEvent::Filesys::Watcher](./lib/AnyEvent/Filesys/Watch.pod)
+See the manual page [AnyEvent::Filesys::Watcher](https://github.com/gflohr/AnyEvent-Filesys-Watcher/blob/main/lib/AnyEvent/Filesys/Watcher.pod)
 for details.
 
 # INSTALLATION
