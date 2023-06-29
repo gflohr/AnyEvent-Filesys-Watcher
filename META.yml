@@ -37,7 +37,7 @@ requires:
   Path::Iterator::Rule: '0'
   Scalar::Util: '0'
   base: '0'
-  perl: '5.008'
+  perl: '5.014'
   strict: '0'
 resources:
   bugtracker: https://github.com/gflohr/AnyEvent-Filesys-Watcher/issues

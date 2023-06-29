@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use 5.008;
+use 5.014;
 
 use ExtUtils::MakeMaker;
 
@@ -18,7 +18,7 @@ my %WriteMakefileArgs = (
   },
   "DISTNAME" => "AnyEvent-Filesys-Watcher",
   "LICENSE" => "unrestricted",
-  "MIN_PERL_VERSION" => "5.008",
+  "MIN_PERL_VERSION" => "5.014",
   "NAME" => "AnyEvent::Filesys::Watcher",
   "PREREQ_PM" => {
     "AnyEvent" => 0,
