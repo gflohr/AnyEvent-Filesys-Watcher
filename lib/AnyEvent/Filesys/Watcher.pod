@@ -4,25 +4,24 @@ AnyEvent::Filesys::Watcher - Watch file system for changes
 
 =head1 SYNOPSIS
 
-	use AnyEvent::Filesys::Watcher;
+    use AnyEvent::Filesys::Watcher;
 
-	$watcher = AnyEvent::Filesys::Watcher->new(
-		dirs => ['src', 'deps'],
-		interval => 2.0,
-		filter => sub { shift !~ /\.(swp|tmp)$/ },
-		cb => sub {
-			my (@events) = @_;
-
-			# Process.
-		},
-		# Improves efficiency on certain platforms.
-		parse_events => 1,
-	);
+    $watcher = AnyEvent::Filesys::Watcher->new(
+        directories => ['src', 'deps'],
+        interval => 2.0,
+        filter => sub { shift !~ /\.(swp|tmp)$/ },
+        callback => sub {
+        my (@events) = @_;
+            # Process.
+        },
+        # Improves efficiency on Linux.
+        parse_events => 1,
+    );
 
 =head1 DESCRIPTION
 
 This module is very similar to B<AnyEvent::Filesys::Notify>.  The main
-difference is that it is not based on L<Moose> and therefore has fewer
+difference is that it is not based on L<Moo> and has therefore has
 dependencies.
 
 See L</"DIFFERENCES TO AnyEvent::Filesys::Notify"> for other differences.
@@ -37,6 +36,12 @@ The following constructors are available:
 
 Creates a new B<AnyEvent::Filesys::Watcher>.  The constructor may throw an
 exception in case of an error!
+
+In fact, it createss an instance of one of the subclasses
+L<AnyEvent::Filesys::Watcher::Fallback>,
+L<AnyEvent::Filesys::Watcher::FSEvents>,
+L<AnyEvent::Filesys::Watcher::INotify2>,
+L<AnyEvent::Filesys::Watcher::KQueue> that all inherit from this module.
 
 B<OPTIONS> is a hash of named options:
 
@@ -59,12 +64,12 @@ This argument is required.
 =item B<interval SECONDS>
 
 Specifies the time in fractional seconds between file system checks
-for the L<AnyEvent::Filesys::Watcher::Backend::Fallback> implementation.
+for the L<AnyEvent::Filesys::Watcher::Fallback> implementation.
 
 Specifies the latency for L<Mac::FSEvents> for the
-L<AnyEvent::Filesys::Watcher::Backend::FSEvents> implementation.
+L<AnyEvent::Filesys::Watcher::FSEvents> implementation.
 
-Ignored for the L<AnyEvent::Filesys::Watcher::Backend::Inotify2> implementation.
+Ignored for the L<AnyEvent::Filesys::Watcher::Inotify2> implementation.
 
 Optional. The default is 2.0.
 
@@ -83,7 +88,7 @@ Optional. By default, all events are passed through.
 =item B<backend BACKEND>
 
 Force the use of the specified backend. The backend is assumed to
-have the "AnyEvent::Filesys::Watcher::Backend" prefix, but you can force
+have the "AnyEvent::Filesys::Watcher" prefix, but you can force
 a fully qualified name by prefixing it with a plus.
 
 Optional. The default is os-dependent: For Linux it is
@@ -128,15 +133,6 @@ Getter/setter for the callback.
 
 Getter for the interval between polls.
 
-=item B<backend>
-
-Getter for the short name of the backend.  This has the same value as the
-named constructor argument if that argument was specified.
-
-=item B<backendClass>
-
-Getter for the fully qualified name of the backend.
-
 =item B<filter [FILTER]>
 
 Getter/setter for the filter.
@@ -150,6 +146,40 @@ Getter/setter for the "parse_events" flag.
 Getter for the "skip_subdirectories" flag.
 
 =back
+
+=head1 INSTALLATION
+
+Unless you are using MS-DOS, you should install a helper module that provides
+the binding for the operating system's filesystem watch functionality:
+
+=head2 Linux
+
+Install L<Linux::Inotify2>:
+
+    $ cpanm Linux::Inotify2
+
+=head2 Mac OS
+
+Install a fork of L<Mac::FSEvents>:
+
+    $ git clone https://github.com/skaji/Mac-FSEvents
+    $ cd Mac-FSEvents
+    $ perl Makefile.PL
+    $ make
+    $ make install
+
+The current version 0.14 of L<Mac::FSEvents> available on CPAN does not
+build on recent Mac OS versions.
+
+=head2 BSD
+
+Install L<IO::KQueue> and L<BSD::Resource>
+
+    $ cpanm IO::KQueue BSD::Resource
+
+This would also work for Mac OS but you have little reason to prefer
+L<IO::KQueue> over L<Mac::FSEvents> unless you are a developer or just
+curious.
 
 =head1 DIFFERENCES TO AnyEvent::Filesys::Notify
 
@@ -177,7 +207,8 @@ Getter for the "skip_subdirectories" flag.
 
 =head1 BUGS
 
-None known.
+Please report bugs to the issue tracker at
+L<GitHub|https://github.com/gflohr/AnyEvent-Filesys-Watcher/issues>.
 
 =head1 AUTHOR
 
@@ -185,7 +216,11 @@ B<AnyEvent::Filesys::Watcher> was written by L<Guido Flohr|http://www.guido-floh
 
 =head1 SEE ALSO
 
-L<AnyEvent::Filesys::Watcher::Backend::Fallback>,
-L<AnyEvent::Filesys::Watcher::Backend::FSEvents>,
-L<AnyEvent::Filesys::Watcher::Backend::INotify2>,
-L<AnyEvent::Filesys::Watcher::Backend::KQue>, perl(1)
+L<AnyEvent::Filesys::Watcher::Fallback>,
+L<AnyEvent::Filesys::Watcher::FSEvents>,
+L<AnyEvent::Filesys::Watcher::INotify2>,
+L<AnyEvent::Filesys::Watcher::KQueue>,
+L<Linux::Inotify2>,
+L<Mac::FSEvents>,
+L<IO::KQueue>, L<BSD::Resource>,
+L<AnyEvent::Filesys::Notify>, perl(1)

@@ -27,7 +27,7 @@ sub new {
 	my $backend_class = delete $args{backend};
 
 	if ($backend_class) {
-		# Use the AEFW::Backend prefix unless the backend starts with a plus.
+		# Use the AEFW:: prefix unless the backend starts with a plus.
 		unless ($backend_class =~ s/^\+//) {
 			$backend_class = "AnyEvent::Filesys::Watcher::"
 				. $backend_class;
