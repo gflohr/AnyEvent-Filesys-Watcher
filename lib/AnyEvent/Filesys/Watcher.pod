@@ -1,12 +1,12 @@
 =head1 NAME
 
-AnyEvent::Filesys::Watch - Watch file system for changes
+AnyEvent::Filesys::Watcher - Watch file system for changes
 
 =head1 SYNOPSIS
 
-	use AnyEvent::Filesys::Watch;
+	use AnyEvent::Filesys::Watcher;
 
-	$watcher = AnyEvent::Filesys::Watch->new(
+	$watcher = AnyEvent::Filesys::Watcher->new(
 		dirs => ['src', 'deps'],
 		interval => 2.0,
 		filter => sub { shift !~ /\.(swp|tmp)$/ },
@@ -35,7 +35,7 @@ The following constructors are available:
 
 =item B<new(OPTIONS)>
 
-Creates a new B<AnyEvent::Filesys::Watch>.  The constructor may throw an
+Creates a new B<AnyEvent::Filesys::Watcher>.  The constructor may throw an
 exception in case of an error!
 
 B<OPTIONS> is a hash of named options:
@@ -52,19 +52,19 @@ This argument is required.
 
 A code reference that is called, when a modification to the monitored
 directories is deteced. The callback is passed a list of
-L<AnyEvent::Filesys::Watch::Events.
+L<AnyEvent::Filesys::Watcher::Events.
 
 This argument is required.
 
 =item B<interval SECONDS>
 
 Specifies the time in fractional seconds between file system checks
-for the L<AnyEvent::Filesys::Watch::Backend::Fallback> implementation.
+for the L<AnyEvent::Filesys::Watcher::Backend::Fallback> implementation.
 
 Specifies the latency for L<Mac::FSEvents> for the
-L<AnyEvent::Filesys::Watch::Backend::FSEvents> implementation.
+L<AnyEvent::Filesys::Watcher::Backend::FSEvents> implementation.
 
-Ignored for the L<AnyEvent::Filesys::Watch::Backend::Inotify2> implementation.
+Ignored for the L<AnyEvent::Filesys::Watcher::Backend::Inotify2> implementation.
 
 Optional. The default is 2.0.
 
@@ -83,14 +83,14 @@ Optional. By default, all events are passed through.
 =item B<backend BACKEND>
 
 Force the use of the specified backend. The backend is assumed to
-have the "AnyEvent::Filesys::Watch::Backend" prefix, but you can force
+have the "AnyEvent::Filesys::Watcher::Backend" prefix, but you can force
 a fully qualified name by prefixing it with a plus.
 
 Optional. The default is os-dependent: For Linux it is
-L<AnyEvent::Filesys::Watch::Inotify2>, for Mac OS it is
-L<AnyEvent::Filesys::Watch::FSEvents>, for BSD systems it is
-L<AnyEvent::Filesys::Watch::KQueue>, and for all other systems it is
-L<AnyEvent::Filesys::Watch::Fallback>.
+L<AnyEvent::Filesys::Watcher::Inotify2>, for Mac OS it is
+L<AnyEvent::Filesys::Watcher::FSEvents>, for BSD systems it is
+L<AnyEvent::Filesys::Watcher::KQueue>, and for all other systems it is
+L<AnyEvent::Filesys::Watcher::Fallback>.
 
 =item B<parse_events BOOLEAN>
 
@@ -181,11 +181,11 @@ None known.
 
 =head1 AUTHOR
 
-B<AnyEvent::Filesys::Watch> was written by L<Guido Flohr|http://www.guido-flohr.net/>.
+B<AnyEvent::Filesys::Watcher> was written by L<Guido Flohr|http://www.guido-flohr.net/>.
 
 =head1 SEE ALSO
 
-L<AnyEvent::Filesys::Watch::Backend::Fallback>,
-L<AnyEvent::Filesys::Watch::Backend::FSEvents>,
-L<AnyEvent::Filesys::Watch::Backend::INotify2>,
-L<AnyEvent::Filesys::Watch::Backend::KQue>, perl(1)
+L<AnyEvent::Filesys::Watcher::Backend::Fallback>,
+L<AnyEvent::Filesys::Watcher::Backend::FSEvents>,
+L<AnyEvent::Filesys::Watcher::Backend::INotify2>,
+L<AnyEvent::Filesys::Watcher::Backend::KQue>, perl(1)

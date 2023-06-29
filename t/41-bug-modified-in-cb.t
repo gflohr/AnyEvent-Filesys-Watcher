@@ -9,12 +9,12 @@ $|++;
 use TestSupport qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event);
 
-use AnyEvent::Filesys::Watch;
+use AnyEvent::Filesys::Watcher;
 
 sub run_test {
 	my %extra_config = @_;
 
-	my $n = AnyEvent::Filesys::Watch->new(
+	my $n = AnyEvent::Filesys::Watcher->new(
 		directories => [$dir],
 		callback => sub {
 			receive_event(@_);
@@ -25,7 +25,7 @@ sub run_test {
 		},
 		%extra_config,
 	);
-	isa_ok($n, 'AnyEvent::Filesys::Watch');
+	isa_ok($n, 'AnyEvent::Filesys::Watcher');
 
 	# Create a file, which will be delete in the callback
 	received_events( sub { create_test_files('foo') },

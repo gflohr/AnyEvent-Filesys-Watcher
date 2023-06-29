@@ -18,10 +18,10 @@ my %module_build_args = (
   "dist_author" => [
     "Guido Flohr <guido.flohr\@cantanea.com>"
   ],
-  "dist_name" => "AnyEvent-Filesys-Watch",
+  "dist_name" => "AnyEvent-Filesys-Watcher",
   "dist_version" => "v0.0.1",
   "license" => "unrestricted",
-  "module_name" => "AnyEvent::Filesys::Watch",
+  "module_name" => "AnyEvent::Filesys::Watcher",
   "recursive_test_files" => 1,
   "requires" => {
     "AnyEvent" => 0,

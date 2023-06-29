@@ -1,4 +1,4 @@
-package AnyEvent::Filesys::Watch::Backend::KQueue;
+package AnyEvent::Filesys::Watcher::Backend::KQueue;
 
 use strict;
 
@@ -6,7 +6,7 @@ use AnyEvent;
 use IO::KQueue;
 use Errno qw(:POSIX);
 
-use Locale::TextDomain ('AnyEvent-Filesys-Watch');
+use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
 
 # Arbitrary limit on open filehandles before issuing a warning
 our $WARN_FILEHANDLE_LIMIT = 50;
@@ -113,7 +113,7 @@ sub _checkFilehandleCount {
 		require Carp;
 		Carp::confess(__x(<<'EOF', count => $count));
 KQueue requires a filehandle for each watched file and directory.
-You currently have {count} filehandles for this AnyEvent::Filesys::Watch object.
+You currently have {count} filehandles for this AnyEvent::Filesys::Watcher object.
 The use of the KQueue backend is not recommended.
 EOF
 	}

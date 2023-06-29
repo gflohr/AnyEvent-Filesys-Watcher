@@ -1,4 +1,4 @@
-package AnyEvent::Filesys::Watch::Backend::FSEvents;
+package AnyEvent::Filesys::Watcher::Backend::FSEvents;
 
 use strict;
 

@@ -3,16 +3,16 @@
 # This next lines is here to make Dist::Zilla happy.
 # ABSTRACT: Watch file system for changes
 
-package AnyEvent::Filesys::Watch;
+package AnyEvent::Filesys::Watcher;
 
 use strict;
 
-use Locale::TextDomain ('AnyEvent-Filesys-Watch');
+use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
 use Scalar::Util qw(reftype);
 use Path::Iterator::Rule;
 use Cwd qw(abs_path);
 
-use AnyEvent::Filesys::Watch::Event;
+use AnyEvent::Filesys::Watcher::Event;
 
 sub new {
 	my ($class, %args) = @_;
@@ -115,7 +115,7 @@ sub _scanFilesystem {
 
 	my $rule = Path::Iterator::Rule->new;
 	$rule->skip_subdirs(qr/./)
-		if (ref $self) =~ /^AnyEvent::Filesys::Watch/
+		if (ref $self) =~ /^AnyEvent::Filesys::Watcher/
 		&& $self->skipSubdirectories;
 	my $next = $rule->iter(@paths);
 	while (my $file = $next->()) {
@@ -135,14 +135,14 @@ sub _diffFilesystem {
 	for my $path (keys %$old_fs) {
 		if (not exists $new_fs->{$path}) {
 			push @events,
-				AnyEvent::Filesys::Watch::Event->new(
+				AnyEvent::Filesys::Watcher::Event->new(
 					path => $path,
 					type => 'deleted',
 					is_directory => $old_fs->{$path}->{is_directory},
 				);
 		} elsif ($self->__isPathModified($old_fs->{$path}, $new_fs->{$path})) {
 			push @events,
-				AnyEvent::Filesys::Watch::Event->new(
+				AnyEvent::Filesys::Watcher::Event->new(
 					path => $path,
 					type => 'modified',
 					is_directory => $old_fs->{$path}->{is_directory},
@@ -153,7 +153,7 @@ sub _diffFilesystem {
 	for my $path (keys %$new_fs) {
 		if (not exists $old_fs->{$path}) {
 			push @events,
-				AnyEvent::Filesys::Watch::Event->new(
+				AnyEvent::Filesys::Watcher::Event->new(
 					path => $path,
 					type => 'created',
 					is_directory => $new_fs->{$path}->{is_directory},
@@ -254,18 +254,18 @@ sub __loadBackend {
 
 	if ($self->backend) {
 		# Use the AEFW::Backend prefix unless the backend starts with a +
-		my $prefix  = "AnyEvent::Filesys::Watch::Backend::";
+		my $prefix  = "AnyEvent::Filesys::Watcher::Backend::";
 		$backend_class = $self->backend;
 		$backend_class = $prefix . $backend_class
 			unless $backend_class =~ s{^\+}{};
 	} elsif ($^O eq 'linux') {
-		$backend_class = 'AnyEvent::Filesys::Watch::Backend::Inotify2';
+		$backend_class = 'AnyEvent::Filesys::Watcher::Backend::Inotify2';
 	} elsif ($^O eq 'darwin') {
-		$backend_class = "AnyEvent::Filesys::Watch::Backend::FSEvents";
+		$backend_class = "AnyEvent::Filesys::Watcher::Backend::FSEvents";
 	} elsif ($^O =~ /bsd/) {
-		$backend_class = "AnyEvent::Filesys::Watch::Backend::KQueue";
+		$backend_class = "AnyEvent::Filesys::Watcher::Backend::KQueue";
 	} else {
-		$backend_class = "AnyEvent::Filesys::Watch::Backend::Fallback";
+		$backend_class = "AnyEvent::Filesys::Watcher::Backend::Fallback";
 	}
 
 	$self->{__backend_class} = $backend_class;

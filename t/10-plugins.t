@@ -3,13 +3,13 @@ use Test::Exception;
 use strict;
 use warnings;
 
-use AnyEvent::Filesys::Watch;
+use AnyEvent::Filesys::Watcher;
 
-my $AEFW = 'AnyEvent::Filesys::Watch';
+my $AEFW = 'AnyEvent::Filesys::Watcher';
 
 subtest 'Try to load the correct backend for this O/S' => sub {
 	if  ($^O eq 'linux' and eval { require Linux::Inotify2; 1 }) {
-		my $w = AnyEvent::Filesys::Watch->new (
+		my $w = AnyEvent::Filesys::Watcher->new (
 			directories => ['t'],
 			callback => sub { }
 		);
@@ -22,7 +22,7 @@ subtest 'Try to load the correct backend for this O/S' => sub {
 			require Mac::FSEvents;
 			1;
 		}) {
-		my $w = AnyEvent::Filesys::Watch->new (
+		my $w = AnyEvent::Filesys::Watcher->new (
 			directories => ['t'],
 			callback => sub { }
 		);
@@ -35,7 +35,7 @@ subtest 'Try to load the correct backend for this O/S' => sub {
 			require IO::KQueue;
 			1;
 		}) {
-		my $w = AnyEvent::Filesys::Watch->new (
+		my $w = AnyEvent::Filesys::Watcher->new (
 			directories => ['t'],
 			callback => sub { }
 		);
@@ -44,7 +44,7 @@ subtest 'Try to load the correct backend for this O/S' => sub {
 		isnt $w->backendClass, "${AEFW}::Backend::FSEvents", '... FSEvents';
 		is $w->backendClass, "${AEFW}::Backend::KQueue", '... KQueue';
 	} else {
-		my $w = AnyEvent::Filesys::Watch->new (
+		my $w = AnyEvent::Filesys::Watcher->new (
 			directories => ['t'],
 			callback => sub { }
 		);
@@ -56,7 +56,7 @@ subtest 'Try to load the correct backend for this O/S' => sub {
 };
 
 subtest 'Try to specify Fallback via the backend argument' => sub {
-	my $w = AnyEvent::Filesys::Watch->new(
+	my $w = AnyEvent::Filesys::Watcher->new(
 		directories => ['t'],
 		callback => sub { },
 		backend => 'Fallback',
@@ -69,7 +69,7 @@ subtest 'Try to specify Fallback via the backend argument' => sub {
 };
 
 subtest 'Try to specify +AEFWBR::Fallback via the backend argument' => sub {
-	my $w = AnyEvent::Filesys::Watch->new(
+	my $w = AnyEvent::Filesys::Watcher->new(
 		directories => ['t'],
 		callback => sub { },
 		backend => "+${AEFW}::Backend::Fallback",
@@ -84,7 +84,7 @@ subtest 'Try to specify +AEFWBR::Fallback via the backend argument' => sub {
 if ($^O eq 'darwin' and eval { require IO::KQueue; 1; }) {
 	subtest 'Try to force KQueue on Mac with IO::KQueue installed' => sub {
 		my $w = eval {
-			AnyEvent::Filesys::Watch->new(
+			AnyEvent::Filesys::Watcher->new(
 				directories => ['t'],
 				callback => sub { },
 				backend => 'KQueue'

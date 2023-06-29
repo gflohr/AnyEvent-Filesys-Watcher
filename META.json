@@ -12,7 +12,7 @@
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : 2
    },
-   "name" : "AnyEvent-Filesys-Watch",
+   "name" : "AnyEvent-Filesys-Watcher",
    "prereqs" : {
       "build" : {
          "requires" : {
@@ -69,9 +69,9 @@
    "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
-         "web" : "https://github.com/gflohr/AnyEvent-Filesys-Watch/issues"
+         "web" : "https://github.com/gflohr/AnyEvent-Filesys-Watcher/issues"
       },
-      "homepage" : "https://github.com/gflohr/AnyEvent-Filesys-Watch#readme",
+      "homepage" : "https://github.com/gflohr/AnyEvent-Filesys-Watcher#readme",
       "repository" : {
          "type" : "git",
          "url" : "git://github.com/gflohr/Anyevent-Filesys-Watch.git",

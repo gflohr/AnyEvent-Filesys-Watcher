@@ -1,8 +1,8 @@
-package AnyEvent::Filesys::Watch::Event;
+package AnyEvent::Filesys::Watcher::Event;
 
 use strict;
 
-use Locale::TextDomain ('AnyEvent-Filesys-Watch');
+use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
 
 sub new {
 	my ($class, %args) = @_;

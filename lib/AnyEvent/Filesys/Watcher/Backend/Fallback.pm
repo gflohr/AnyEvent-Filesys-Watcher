@@ -1,4 +1,4 @@
-package AnyEvent::Filesys::Watch::Backend::Fallback;
+package AnyEvent::Filesys::Watcher::Backend::Fallback;
 
 use strict;
 

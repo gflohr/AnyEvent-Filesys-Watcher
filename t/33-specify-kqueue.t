@@ -9,7 +9,7 @@ $|++;
 use TestSupport qw(create_test_files delete_test_files move_test_files
   modify_attrs_on_test_files $dir received_events receive_event);
 
-use AnyEvent::Filesys::Watch;
+use AnyEvent::Filesys::Watcher;
 use AnyEvent::Impl::Perl;
 
 unless ($^O eq 'darwin' and eval { require IO::KQueue; 1; }) {
@@ -23,14 +23,14 @@ create_test_files(qw(two/1));
 create_test_files(qw(one/sub/1));
 ## ls: one/1 one/sub/1 two/1
 
-my $n = AnyEvent::Filesys::Watch->new(
+my $n = AnyEvent::Filesys::Watcher->new(
 	directories => [ map { File::Spec->catfile($dir, $_) } qw(one two) ],
 	filter => sub { shift !~ qr/ignoreme/ },
 	callback => sub { receive_event(@_) },
 	backend => 'KQueue',
 );
-isa_ok($n, 'AnyEvent::Filesys::Watch');
-is($n->backendClass, 'AnyEvent::Filesys::Watch::Backend::KQueue',
+isa_ok($n, 'AnyEvent::Filesys::Watcher');
+is($n->backendClass, 'AnyEvent::Filesys::Watcher::Backend::KQueue',
 	'... with the KQueue backend');
 
 diag "This might take a few seconds to run...";
