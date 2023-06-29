@@ -215,13 +215,10 @@ sub _processEvents {
 	# Some implementations provided enough information to parse the raw events,
 	# other require rescanning the file system (ie, Mac::FSEvents).
 	# have added a flag to avoid breaking old code.
-
 	my @events;
-	my $watcher = $self->{__watcher};
-
-	if ($self->parseEvents and $watcher->can('_parseEvents') ) {
+	if ($self->parseEvents and $self->can('_parseEvents') ) {
 		@events =
-			$watcher->_parseEvents(
+			$self->_parseEvents(
 				$self,
 				sub { $self->__applyFilter(@_) },
 				@raw_events
@@ -233,17 +230,18 @@ sub _processEvents {
 	 		$self->_diffFilesystem($self->_oldFilesystem, $new_fs));
 		$self->_oldFilesystem($new_fs);
 
-		# Some backends (when not using parse_events) need to add files
-		# (KQueue) or directories (Inotify2) to the watch list after they are
-		# created. Give them a chance to do that here.
-		$watcher->_postProcessEvents($self, @events)
-			if $watcher->can('_postProcessEvents');
+		$self->_postProcessEvents(@events);
 	}
 
 	$self->callback->(@events) if @events;
 
 	return \@events;
 }
+
+# Some backends (when not using parse_events) need to add files
+# (KQueue) or directories (Inotify2) to the watch list after they are
+# created. Give them a chance to do that here.
+sub _postProcessEvents {}
 
 sub __applyFilter {
 	my ($self, @events) = @_;

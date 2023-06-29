@@ -25,7 +25,7 @@ my $n = AnyEvent::Filesys::Watcher->new(
 	backend => 'Fallback',
 );
 isa_ok($n, 'AnyEvent::Filesys::Watcher');
-is($n->backendClass, 'AnyEvent::Filesys::Watcher::Backend::Fallback',
+isa_ok($n, 'AnyEvent::Filesys::Watcher::Fallback',
 	'... with the fallback backend');
 
 diag "This might take a few seconds to run...";

@@ -24,13 +24,13 @@ isa_ok($n, 'AnyEvent::Filesys::Watcher');
 SKIP: {
 	skip "not sure which os we are on", 1
 		unless $^O =~ /linux|darwin|bsd/;
-	is($n->backendClass, 'AnyEvent::Filesys::Watcher::Backend::Inotify2',
+	isa_ok($n, 'AnyEvent::Filesys::Watcher::Inotify2',
 		'... with the linux backend')
 		if $^O eq 'linux';
-	is($n->backendClass, 'AnyEvent::Filesys::Watcher::Backend::FSEvents',
+	isa_ok($n, 'AnyEvent::Filesys::Watcher::FSEvents',
 		'... with the mac backend')
 		if $^O eq 'darwin';
-	is($n->backendClass, 'AnyEvent::Filesys::Watcher::Backend::KQueue',
+	isa_ok($n, 'AnyEvent::Filesys::Watcher::KQueue',
 		'... with the bsd backend')
 		if $^O =~ /bsd/;
 }

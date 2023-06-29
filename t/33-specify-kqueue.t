@@ -30,7 +30,7 @@ my $n = AnyEvent::Filesys::Watcher->new(
 	backend => 'KQueue',
 );
 isa_ok($n, 'AnyEvent::Filesys::Watcher');
-is($n->backendClass, 'AnyEvent::Filesys::Watcher::Backend::KQueue',
+isa_ok($n, 'AnyEvent::Filesys::Watcher::KQueue',
 	'... with the KQueue backend');
 
 diag "This might take a few seconds to run...";
