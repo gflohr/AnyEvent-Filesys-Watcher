@@ -4,6 +4,22 @@ use Test::More;
 use File::Find;
 
 BEGIN {
+	my $module;
+	if ($^O eq 'linux') {
+		$module = 'Linux/Inotify2.pm';
+	} elsif ($^O eq 'darwin') {
+		$module = 'Mac::FSEvents';
+	} elsif ($^O =~ /bsd/i) {
+		$module = 'IO::KQueue';
+	}
+
+	if ($module) {
+		eval { require $module };
+		plan skip_all => 'no os-specific backend installed' if $@;
+	}
+}
+
+BEGIN {
 	find( {
 			wanted => sub {
 				return unless m{\.pm$};
