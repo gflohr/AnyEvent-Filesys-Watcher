@@ -1,4 +1,4 @@
-use Test::More tests => 6;
+use Test::More;
 use Test::Exception;
 use strict;
 use warnings;
@@ -13,10 +13,7 @@ my $w = AnyEvent::Filesys::Watcher->new(
 	backend => 'Fallback',
 );
 isa_ok $w, 'AnyEvent::Filesys::Watcher';
-is $w->backendClass, 'AnyEvent::Filesys::Watcher::Backend::Fallback',  '... Fallback';
-isnt $w->backendClass, 'AnyEvent::Filesys::Watcher::Backend::Inotify2', '... Inotify2';
-isnt $w->backendClass, 'AnyEvent::Filesys::Watcher::Backend::FSEvents', '... FSEvents';
-isnt $w->backendClass, 'AnyEvent::Filesys::Watcher::Backend::KQueue',   '... KQueue';
+isa_ok $w, 'AnyEvent::Filesys::Watcher::Fallback',  '... Fallback';
 
 SKIP: {
 	skip 'Test for Mac/Linux/BSD only', 1
