@@ -5,11 +5,16 @@ use warnings;
 
 use AnyEvent::Filesys::Watcher;
 
-use Test::Without::Module qw(Linux::Inotify2 Mac::FSEvents IO::KQueue);
+use Test::Without::Module qw(
+	Linux::Inotify2
+	Mac::FSEvents
+	Filesys::Notify::Win32::ReadDirectoryChanges
+	IO::KQueue
+);
 
 if ($^O ne 'linux' && $^O ne 'darwin'
-    && $^O !~ /bsd/i) {
-    plan skip_all => 'only for Linux, Mac OS, and BSD';
+    && $^O ne 'MSWin32' && $^O !~ /bsd/i) {
+    plan skip_all => 'only for Linux, Mac OS, MS-DOS, and BSD';
 }
 
 my $w = AnyEvent::Filesys::Watcher->new(
