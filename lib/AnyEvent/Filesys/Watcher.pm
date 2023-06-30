@@ -40,6 +40,8 @@ sub new {
 		$backend_class = 'AnyEvent::Filesys::Watcher::Inotify2';
 	} elsif ($^O eq 'darwin') {
 		$backend_class = "AnyEvent::Filesys::Watcher::FSEvents";
+	} elsif ($^O eq 'MSWin32') {
+		$backend_class = "AnyEvent::Filesys::Watcher::ReadDirectoryChanges";
 	} elsif ($^O =~ /bsd/) {
 		$backend_class = "AnyEvent::Filesys::Watcher::KQueue";
 	} else {

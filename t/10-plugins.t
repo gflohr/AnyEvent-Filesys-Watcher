@@ -26,6 +26,16 @@ subtest 'Try to load the correct backend for this O/S' => sub {
 		);
 		isa_ok $w, "${AEFW}::FSEvents", 'FSEvents';
 		isa_ok $w, "${AEFW}", 'parent class';
+	} elsif ($^O eq 'MSWin32' and eval {
+		require Filesys::Notify::Win32::ReadDirectoryChanges;
+		1;
+	}) {
+		my $w = AnyEvent::Filesys::Watcher->new (
+			directories => ['t'],
+			callback => sub { }
+		);
+		isa_ok $w, "${AEFW}::ReadDirectoryChanges", 'ReadDirectoryChanges';
+		isa_ok $w, "${AEFW}", 'parent class';
 	} elsif (
 		$^O =~ /bsd/ and eval {
 			require IO::KQueue;
