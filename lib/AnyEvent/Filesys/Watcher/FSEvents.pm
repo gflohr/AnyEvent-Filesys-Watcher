@@ -4,6 +4,7 @@ use strict;
 
 use AnyEvent;
 use Mac::FSEvents;
+use Scalar::Util qw(weaken);
 
 use base qw(AnyEvent::Filesys::Watcher);
 
@@ -19,14 +20,16 @@ sub new {
 
 	# Create an AnyEvent->io watcher for each fs_monitor
 	my @watchers;
+	my $alter_ego = $self;
 	for my $fs_monitor (@fs_monitors) {
 		my $w = AE::io $fs_monitor->watch, 0, sub {
 			if (my @events = $fs_monitor->read_events) {
-				$self->_processEvents(@events);
+				$alter_ego->_processEvents(@events);
 			}
 		};
 		push @watchers, $w;
 	}
+	weaken $alter_ego;
 
 	$self->_filesystemMonitor(\@fs_monitors);
 

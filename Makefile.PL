@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use 5.014;
+use 5.008;
 
 use ExtUtils::MakeMaker;
 
@@ -18,7 +18,7 @@ my %WriteMakefileArgs = (
   },
   "DISTNAME" => "AnyEvent-Filesys-Watcher",
   "LICENSE" => "unrestricted",
-  "MIN_PERL_VERSION" => "5.014",
+  "MIN_PERL_VERSION" => "5.008",
   "NAME" => "AnyEvent::Filesys::Watcher",
   "PREREQ_PM" => {
     "AnyEvent" => 0,
@@ -41,6 +41,7 @@ my %WriteMakefileArgs = (
     "File::Spec" => 0,
     "File::Temp" => 0,
     "Test::Exception" => "0.43",
+    "Test::Memory::Cycle" => 0,
     "Test::More" => 0,
     "Test::Without::Module" => "0.21",
     "autodie" => 0,
@@ -72,6 +73,7 @@ my %FallbackPrereqs = (
   "Path::Iterator::Rule" => 0,
   "Scalar::Util" => 0,
   "Test::Exception" => "0.43",
+  "Test::Memory::Cycle" => 0,
   "Test::More" => 0,
   "Test::Without::Module" => "0.21",
   "autodie" => 0,

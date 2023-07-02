@@ -28,10 +28,12 @@ po/PACKAGE
 po/POTFILES
 po/de.po
 t/00-base.t
-t/00-load.t
+t/01-load.t
+t/02-cyclic-references.t
 t/10-plugins.t
 t/11-plugin-default.t
 t/12-direct-invocation.t
+t/13-graceful-failure.t
 t/20-scanFilesystem.t
 t/21-scanFilesystemLinks.t
 t/30-event.t
@@ -42,6 +44,7 @@ t/35-skip_subdirs.t
 t/40-bugs.t
 t/41-bug-modified-in-cb.t
 t/42-inotify-race.t
+t/43-single-directory.t
 t/author-critic.t
 t/author-pod-coverage.t
 t/author-pod-syntax.t

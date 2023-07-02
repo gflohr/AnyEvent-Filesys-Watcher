@@ -8,6 +8,7 @@ use AnyEvent;
 use Linux::Inotify2;
 use Carp;
 use Path::Iterator::Rule;
+use Scalar::Util qw(weaken);
 
 use base qw(AnyEvent::Filesys::Watcher);
 
@@ -24,14 +25,16 @@ sub new {
 	my $old_fs = $self->_oldFilesystem;
 	my @dirs = grep { $old_fs->{$_}->{is_directory} } keys %$old_fs;
 
+	my $alter_ego = $self;
 	for my $dir (@dirs) {
 		$inotify->watch(
 			$dir,
 			IN_MODIFY | IN_CREATE | IN_DELETE | IN_DELETE_SELF |
 				IN_MOVE | IN_MOVE_SELF | IN_ATTRIB,
-			sub { my $e = shift; $self->_processEvents($e); }
+			sub { my $e = shift; $alter_ego->_processEvents($e); }
 		);
 	}
+	weaken $alter_ego;
 
 	$self->_filesystemMonitor($inotify);
 

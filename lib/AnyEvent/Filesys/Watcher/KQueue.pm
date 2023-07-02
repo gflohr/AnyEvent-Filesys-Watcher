@@ -2,11 +2,12 @@ package AnyEvent::Filesys::Watcher::KQueue;
 
 use strict;
 
+use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
+
 use AnyEvent;
 use IO::KQueue;
 use Errno qw(:POSIX);
-
-use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
+use Scalar::Util qw(weaken);
 
 use base qw(AnyEvent::Filesys::Watcher);
 
@@ -59,13 +60,15 @@ sub new {
 		$fhs->{$path} = $fh if defined $fh;
 	}
 
-	# Now use AE to watch the KQueue
+	# Now use AE to watch the KQueue.
 	my $w;
+	my $alter_ego = $self;
 	$w = AE::io $$kqueue, 0, sub {
 		if (my @events = $kqueue->kevent) {
-			$self->_processEvents(@events);
+			$alter_ego->_processEvents(@events);
 		}
 	};
+	weaken $alter_ego;
 	$watcher->{w} = $w;
 
 	$self->_checkFilehandleCount;
