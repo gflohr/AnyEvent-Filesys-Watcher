@@ -77,7 +77,7 @@ jobs:
       run: make
 
     - name: 'Test'
-      run: prove -wlmb t
+      run: prove -wlmbv
 
     - name: 'Test with coverage'
       if: ${{ matrix.coverage }}
