@@ -30,6 +30,10 @@ sub new {
 
 	my $backend_class = $args{backend};
 
+	if (exists $args{cb} && !exists $args{callback}) {
+		$args{callback} = delete $args{cb};
+	}
+
 	if ($backend_class) {
 		# Use the AEFW:: prefix unless the backend starts with a plus.
 		unless ($backend_class =~ s/^\+//) {

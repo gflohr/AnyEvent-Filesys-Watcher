@@ -5,13 +5,11 @@ use Test::Exception;
 
 use_ok 'AnyEvent::Filesys::Watcher';
 
-my $instance;
 lives_ok {
-	$instance = AnyEvent::Filesys::Watcher->new(
+	AnyEvent::Filesys::Watcher->new(
 		directories => ['.'],
 		cb => sub {}
 	);
-}
-ok $instance;
+} 'parameter cb should work as an alias for callback';
 
 done_testing;
