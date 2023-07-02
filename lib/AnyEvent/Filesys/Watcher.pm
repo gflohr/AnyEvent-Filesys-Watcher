@@ -81,6 +81,10 @@ sub _new {
 
 	my $self = bless {}, $class;
 
+	if (exists $args{cb} && !exists $args{callback}) {
+		$args{callback} = delete $args{cb};
+	}
+
 	my @required = qw(directories callback);
 	foreach my $required (@required) {
 		if (!exists $args{$required}) {
