@@ -14,11 +14,18 @@ sub new {
 
 	my $self = $class->SUPER::_new(%args);
 
+	my $watcher = Filesys::Notify::Win32::ReadDirectoryChanges->new;
+	foreach my $directory (@{$self->directories}) {
+		$watcher->watch_directory(path => $directory, subtree => 1);
+	}
+
 	my $timer = AnyEvent->timer(
 		after => $self->interval,
 		interval => $self->interval,
 		cb => sub {
-			$self->_processEvents();
+			if ($watcher->queue->pending) {
+				$self->_processEvents();
+			}
 		}
 	);
 	if (!$timer) {
@@ -26,8 +33,6 @@ sub new {
 	}
 
 	bless $self, $class;
-
-	$self->_watcher($timer);
 
 	return $self;
 }
