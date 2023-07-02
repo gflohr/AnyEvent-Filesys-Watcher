@@ -66,6 +66,12 @@ L<AnyEvent::Filesys::Watcher::Events>.
 
 This argument is required.
 
+=item B<cb CALLBACK>
+
+This is an alias for the parameter B<callback>.
+
+This argument is required if the argument B<callback> has not been given.
+
 =item B<interval SECONDS>
 
 Specifies the time in fractional seconds between file system checks
