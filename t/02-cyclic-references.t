@@ -26,7 +26,7 @@ $SIG{__WARN__} = sub {
 my $instance;
 
 $instance = AnyEvent::Filesys::Watcher->new(
-	directories => '.',
+	directories => 't',
 	callback => sub {},
 	backend => 'Fallback',
 );
@@ -34,7 +34,7 @@ memory_cycle_ok $instance, 'Fallback';
 
 if ('linux' eq $^O && eval { require Linux::Inotify2 }) {
 	$instance = AnyEvent::Filesys::Watcher->new(
-		directories => '.',
+		directories => 't',
 		callback => sub {},
 		backend => 'Inotify2',
 	);
@@ -43,7 +43,7 @@ if ('linux' eq $^O && eval { require Linux::Inotify2 }) {
 
 if ('darwin' eq $^O && eval { require Mac::FSEvents }) {
 	$instance = AnyEvent::Filesys::Watcher->new(
-		directories => '.',
+		directories => 't',
 		callback => sub {},
 		backend => 'FSEvents',
 	);
@@ -52,7 +52,7 @@ if ('darwin' eq $^O && eval { require Mac::FSEvents }) {
 
 if (($^O =~ /bsd/i || 'darwin' eq $^O) && eval { require IO::KQueue }) {
 	$instance = AnyEvent::Filesys::Watcher->new(
-		directories => '.',
+		directories => 't',
 		callback => sub {},
 		backend => 'KQueue',
 	);

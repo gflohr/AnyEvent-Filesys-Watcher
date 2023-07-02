@@ -7,7 +7,7 @@ use_ok 'AnyEvent::Filesys::Watcher';
 
 lives_ok {
 	AnyEvent::Filesys::Watcher->new(
-		directories => ['.'],
+		directories => ['t'],
 		cb => sub {}
 	);
 } 'parameter cb should work as an alias for callback';
