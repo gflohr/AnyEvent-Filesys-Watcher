@@ -61,5 +61,5 @@ jobs:
       run: make
 
     - name: 'Test'
-      run: prove -wlmb t
+      run: prove -wlmbv
 
