@@ -5,7 +5,11 @@ use warnings;
 
 use AnyEvent::Filesys::Watcher;
 
-use Test::Without::Module qw(Linux::Inotify2 Mac::FSEvents IO::KQueue);
+use Test::Without::Module qw(
+	Linux::Inotify2
+	Mac::FSEvents
+	Filesys::Notify::Win32::ReadDirectoryChanges
+	IO::KQueue);
 
 my $w = AnyEvent::Filesys::Watcher->new(
 	directories => ['t'],
@@ -21,10 +25,12 @@ SKIP: {
 		$backend = 'Inotify2';
 	} elsif ('darwin' eq $^O) {
 		$backend = 'FSEvents';
+	} elsif ('MSWin32' eq $^O || 'cygwin' eq $^O) {
+		$backend = 'ReadDirectoryChanges';
 	} elsif ($^O =~ /bsd/i) {
 		$backend = 'KQueue';
 	} else {
-		skip 'Test for Mac/Linux/BSD only', 1;
+		skip 'Test for Mac/Linux/MS-DOS/BSD only', 1;
 	}
 	throws_ok {
 		AnyEvent::Filesys::Watcher->new(

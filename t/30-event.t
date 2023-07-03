@@ -84,7 +84,7 @@ received_events(sub { move_test_files('one/3' => 'one/5' ) },
 	'move files', qw(deleted created) );
 
 SKIP: {
-	skip "skip attr mods on Win32", 1 if $^O eq 'MSWin32';
+	skip "skip attr mods on Win32", 1 if ($^O eq 'MSWin32' || $^O eq 'cygwin');
 
 	# ls: one/1 one/2 one/ignoreme one/5 one/sub/1 one/sub/2 ~two/1 ~two/sub
 	received_events(

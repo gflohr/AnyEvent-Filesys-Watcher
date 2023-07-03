@@ -50,6 +50,15 @@ if ('darwin' eq $^O && eval { require Mac::FSEvents }) {
 	memory_cycle_ok $instance, 'FSEvents';
 }
 
+if (('MSWin32' eq $^O || 'cygwin' eq $^O) && eval { require Mac::FSEvents }) {
+	$instance = AnyEvent::Filesys::Watcher->new(
+		directories => 't',
+		callback => sub {},
+		backend => 'ReadDirectoryChanges',
+	);
+	memory_cycle_ok $instance, 'ReadDirectoryChanges';
+}
+
 if (($^O =~ /bsd/i || 'darwin' eq $^O) && eval { require IO::KQueue }) {
 	$instance = AnyEvent::Filesys::Watcher->new(
 		directories => 't',

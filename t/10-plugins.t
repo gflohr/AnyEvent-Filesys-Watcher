@@ -15,8 +15,7 @@ subtest 'Try to load the correct backend for this O/S' => sub {
 		);
 		isa_ok $w, "${AEFW}::Inotify2", 'Inotify2';
 		isa_ok $w, "${AEFW}", 'parent class';
-	} elsif (
-		$^O eq 'darwin' and eval {
+	} elsif ($^O eq 'darwin' and eval {
 			require Mac::FSEvents;
 			1;
 		}) {
@@ -26,18 +25,17 @@ subtest 'Try to load the correct backend for this O/S' => sub {
 		);
 		isa_ok $w, "${AEFW}::FSEvents", 'FSEvents';
 		isa_ok $w, "${AEFW}", 'parent class';
-	} elsif ($^O eq 'MSWin32' and eval {
+	} elsif (($^O eq 'MSWin32' || $^O eq 'cygwin') and eval {
 		require Filesys::Notify::Win32::ReadDirectoryChanges;
 		1;
-	}) {
+		}) {
 		my $w = AnyEvent::Filesys::Watcher->new (
 			directories => ['t'],
 			callback => sub { }
 		);
 		isa_ok $w, "${AEFW}::ReadDirectoryChanges", 'ReadDirectoryChanges';
 		isa_ok $w, "${AEFW}", 'parent class';
-	} elsif (
-		$^O =~ /bsd/ and eval {
+	} elsif ($^O =~ /bsd/ and eval {
 			require IO::KQueue;
 			1;
 		}) {

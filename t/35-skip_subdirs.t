@@ -20,6 +20,8 @@ BEGIN {
 		$module = 'Linux/Inotify2.pm';
 	} elsif ($^O eq 'darwin') {
 		$module = 'Mac::FSEvents';
+	} elsif ($^O eq 'MSWin32' || $^O eq 'cygwin') {
+		$module = 'Mac::FSEvents';
 	} elsif ($^O =~ /bsd/i) {
 		$module = 'IO::KQueue';
 	}
