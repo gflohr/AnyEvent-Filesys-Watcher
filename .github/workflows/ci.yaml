@@ -63,6 +63,10 @@ jobs:
         cd .. &&
         rm -rf Mac-FSEvents
 
+    - name: 'Install Filesys::Notify::Win32::ReadDirectoryChanges'
+      if: matrix.os == 'windows-latest'
+      run: cpanm --notest 'Filesys::Notify::Win32::ReadDirectoryChanges'
+
     - name: 'Install IO::KQueue'
       if: matrix.os == 'macos-latest'
       run: cpanm --notest IO::KQueue
