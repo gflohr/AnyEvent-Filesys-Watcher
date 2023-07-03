@@ -75,9 +75,21 @@ files/dirs to watch. Optional.
 
 =item B<parse_events BOOLEAN>
 
-If you pass a truthy value for this option, the events returned by the Linux
+If you pass a truthy value for this option, the events returned by the
 kernel are parsed in order to generate the L<AnyEvent::Filesys::Watcher::Event>
 events because they contain enough information.
+
+=item B<directory_writes BOOLEAN>
+
+Directories are also files that basically store the list of files inside that
+directory.  Therefore, if you create or delete a file, the directory
+containing the file changes.  However, only the
+L<AnyEvent::Filesys::Watcher::ReadDirectoryChanges> backend can generate such
+modification events.  For the sake of compatibilty with the other backend, 
+these modification events are filter out by default.  If you pass a truthy
+option, these events are included.
+
+The default for this optional parameter is false.
 
 =back
 

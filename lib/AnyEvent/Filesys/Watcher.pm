@@ -257,13 +257,13 @@ sub _processEvents {
 	if ($self->parseEvents and $self->can('_parseEvents') ) {
 		@events =
 			$self->_parseEvents(
-				sub { $self->__applyFilter(@_) },
+				sub { $self->_applyFilter(@_) },
 				@raw_events
 			);
 	} else {
 		my $new_fs = $self->_scanFilesystem($self->directories);
 
-		@events = $self->__applyFilter(
+		@events = $self->_applyFilter(
 	 		$self->_diffFilesystem($self->_oldFilesystem, $new_fs));
 		$self->_oldFilesystem($new_fs);
 
@@ -280,7 +280,7 @@ sub _processEvents {
 # created. Give them a chance to do that here.
 sub _postProcessEvents {}
 
-sub __applyFilter {
+sub _applyFilter {
 	my ($self, @events) = @_;
 
 	my $cb = $self->filter;
@@ -295,6 +295,10 @@ sub _oldFilesystem {
 	}
 
 	return $self->{__old_filesystem};
+}
+
+sub _directoryWrites {
+	shift->{__directory_writes};
 }
 
 sub __compileFilter {

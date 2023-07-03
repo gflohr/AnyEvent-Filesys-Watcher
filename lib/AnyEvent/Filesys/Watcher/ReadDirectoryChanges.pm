@@ -18,7 +18,12 @@ sub new {
 	my $self = $class->SUPER::_new(%args);
 
 	my $watcher = Filesys::Notify::Win32::ReadDirectoryChanges->new;
-	foreach my $directory (@{$self->directories}) {
+	foreach (@{$self->directories}) {
+		# Make sure the original directory does not get overwritten.
+		my $directory = $_;
+		if (!File::Spec->file_name_is_absolute($directory)) {
+			$directory = File::Spec->rel2abs($directory);
+		}
 		eval {
 			$watcher->watch_directory(path => $directory, subtree => 1);
 		};
@@ -34,9 +39,14 @@ sub new {
 		interval => $self->interval,
 		cb => sub {
 			if ($watcher->queue->pending) {
-				my @events = $watcher->queue->dequeue;
-				@events = $self->__processEvents(@events);
-				$alter_ego->_processEvents(@events);
+				my @raw_events = $watcher->queue->dequeue;
+				my @events = $alter_ego->_translateEvents(@raw_events);
+
+				# Somethimes, there is a lone "renamed" event which gets
+				# ignored.
+				$alter_ego->_processEvents(
+					@events
+				) if @events;
 			}
 		}
 	);
@@ -50,56 +60,57 @@ sub new {
 	return $self;
 }
 
-sub __processEvents {
-	my ($self, @all_events) = @_;
+sub _parseEvents {
+	my ($self, $filter, @events) = @_;
 
-	# We want to make sure that only one event gets fired for each file.
-	# It is assumed that the last event fired always gives the final state.
-	#
-	# FIXME! This is not good. Instead allow multiple events for one
-	# path but just split the rename thing into two events.
-	my %state;
-	my @events;
-	foreach my $event (reverse @all_events) {
-		my $action = $event->{action};
-
-		if ('renamed' eq $action) {
-			if (!exists $state{$event->{old_name}}) {
-				push @events, AnyEvent::Filesys::Watcher::Event->new(
-					$self->_stat($event->{old_name}),
-					action => 'deleted',
-				);
-				$state{$event->{old_name}} = 'deleted';
-			}
-			if (!exists $state{$event->{new_name}}) {
-				push @events, AnyEvent::Filesys::Watcher::Event->new(
-					$self->_stat($event->{new_name}),
-					type => 'created',
-				);
-				$state{$event->{new_name}} = 'created';
-			}
-		} else {
-			my $path = $event->{path};
-			next if exists $state{$path};
-
-			if ('added' eq $action) {
-				$action = 'created';
-			} elsif ('removed' eq $action) {
-				$action = 'deleted';
-			} elsif ('modified' ne $action) {
-				die __x("unknown action '{action}' for path '{path}'"
-				        . " (should not happen)",
-				        action => $action, path => $path);
-			}
-			push @events, AnyEvent::Filesys::Watcher::Event->new(
-				$self->_stat($path),
-				type => $action,
-			);
-			$state{$path} = $action;
-		}
-	}
+	# The events have already been cooked and filtered.
 
 	return @events;
+}
+
+sub _translateEvents {
+	my ($self, @all_events) = @_;
+
+	my @events;
+	for my $event (@all_events) {
+		my $action = $event->{action};
+		my $path = $event->{path};
+
+		my $is_directory = -d $path;
+		if ('removed' eq $action || 'old_name' eq $action) {
+			$action = 'deleted';
+		} elsif ('added' eq $action || 'new_name' eq $action) {
+			# FIXME! Check if the file had been overwritten (modified) or
+			# created.
+			$action = 'created';
+		} elsif ('renamed' eq $action) {
+			# Not needed.
+			next;
+		} elsif ('unknown' eq $action) {
+			die __"Error: Probably too many files inside watched directories.\n";
+		} elsif ('modified' eq $action) {
+			if ($is_directory && !$self->_directoryWrites) {
+				# MS-DOS generates modified events for the directory if the
+				# contents of the directory has changed.  This is actually
+				# correct because the directory file has really changed.  But
+				# the other backends do not create such events, and so do
+				# we unless explicitely requested.
+				next;
+			}
+		} else {
+			die __x("unknown action '{action}' for path '{path}'"
+					. " (should not happen)",
+					action => $action, path => $path);
+		}
+
+		push @events, AnyEvent::Filesys::Watcher::Event->new(
+			path => $path,
+			type => $action,
+			is_directory => -d $path,
+		);
+	}
+
+	return $self->_applyFilter(@events);
 }
 
 1;

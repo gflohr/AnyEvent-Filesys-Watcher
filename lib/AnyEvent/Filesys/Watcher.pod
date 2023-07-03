@@ -110,8 +110,8 @@ L<AnyEvent::Filesys::Watcher::Fallback>.
 
 =item B<parse_events BOOLEAN>
 
-In backends that support it (currently INotify2), parse the events
-instead of rescanning file system for changed "stat()" information.
+In backends that support it (currently INotify2 and ReadDirectoryChanges), parse the events
+instead of rescanning the file system for changed "stat()" information.
 Note, that this might cause slight changes in behavior. In
 particular, the Inotify2 backend will generate an additional
 'modified' event when a file changes (once when opened for write,
@@ -122,6 +122,17 @@ and once when modified).
 Skips subdirectories and anything in them while building a list of
 files/dirs to watch. Optional.
 
+=item B<directory_writes BOOLEAN>
+
+Directories are also files that basically store the list of files inside that
+directory.  Therefore, if you create or delete a file, the directory
+containing the file changes.  However, only the
+L<AnyEvent::Filesys::Watcher::ReadDirectoryChanges> backend can generate such
+modification events.  For the sake of compatibilty with the other backend, 
+these modification events are filter out by default.  If you pass a truthy
+option, these events are included.
+
+The default for this optional parameter is false.
 
 =back
 
