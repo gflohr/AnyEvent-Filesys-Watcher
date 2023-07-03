@@ -11,9 +11,9 @@ BEGIN {
 	if ($^O eq 'linux') {
 		$module = 'Linux/Inotify2.pm';
 	} elsif ($^O eq 'darwin') {
-		$module = 'Mac::FSEvents';
+		$module = 'Mac/FSEvents.pm';
 	} elsif ($^O =~ /bsd/i) {
-		$module = 'IO::KQueue';
+		$module = 'IO/KQueue.pm';
 	}
 
 	if ($module) {

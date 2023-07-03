@@ -67,6 +67,10 @@ jobs:
       if: matrix.os == 'macos-latest'
       run: cpanm --notest IO::KQueue
 
+    - name: 'Install BSD::Resource'
+      if: matrix.os == 'macos-latest'
+      run: cpanm --notest BSD::Resource
+
     - name: 'Installing other dependencies'
       run: cpanm --notest --installdeps --verbose .
 
@@ -77,7 +81,7 @@ jobs:
       run: make
 
     - name: 'Test'
-      run: prove -wlmb t
+      run: prove -wlmbv
 
     - name: 'Test with coverage'
       if: ${{ matrix.coverage }}

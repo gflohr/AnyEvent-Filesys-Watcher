@@ -2,7 +2,10 @@ package AnyEvent::Filesys::Watcher::Fallback;
 
 use strict;
 
+use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
+
 use AnyEvent;
+use Scalar::Util qw(weaken);
 
 use base qw(AnyEvent::Filesys::Watcher);
 
@@ -11,13 +14,16 @@ sub new {
 
 	my $self = $class->SUPER::_new(%args);
 
+	my $alter_ego = $self;
 	my $impl = AnyEvent->timer(
 		after => $self->interval,
 		interval => $self->interval,
 		cb => sub {
-			$self->_processEvents();
+			$alter_ego->_processEvents();
 		}
 	);
+	weaken $alter_ego;
+
 	if (!$impl) {
 		die __x("Error creating timer: {error}\n", error => $@);
 	}

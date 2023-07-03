@@ -44,7 +44,7 @@
             "Path::Iterator::Rule" : "0",
             "Scalar::Util" : "0",
             "base" : "0",
-            "perl" : "5.014",
+            "perl" : "5.008",
             "strict" : "0"
          }
       },
@@ -60,6 +60,7 @@
             "File::Spec" : "0",
             "File::Temp" : "0",
             "Test::Exception" : "0.43",
+            "Test::Memory::Cycle" : "0",
             "Test::More" : "0",
             "Test::Without::Module" : "0.21",
             "autodie" : "0",
