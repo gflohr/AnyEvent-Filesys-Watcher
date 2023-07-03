@@ -2,9 +2,8 @@ package AnyEvent::Filesys::Watcher::ReadDirectoryChanges;
 
 use strict;
 
-use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
-
 use AnyEvent;
+
 use Filesys::Notify::Win32::ReadDirectoryChanges;
 
 use base qw(AnyEvent::Filesys::Watcher);
@@ -24,7 +23,8 @@ sub new {
 		interval => $self->interval,
 		cb => sub {
 			if ($watcher->queue->pending) {
-				$self->_processEvents();
+				my @events = $watcher->queue->dequeue;
+				$self->_processEvents(@events);
 			}
 		}
 	);
@@ -32,7 +32,7 @@ sub new {
 		die __x("Error creating timer: {error}\n", error => $@);
 	}
 
-	bless $self, $class;
+	$self->_watcher($timer);
 
 	return $self;
 }

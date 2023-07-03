@@ -22,8 +22,6 @@ sub new {
 		die __x("Error creating timer: {error}\n", error => $@);
 	}
 
-	bless $self, $class;
-
 	$self->_watcher($impl);
 
 	return $self;
