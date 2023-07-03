@@ -182,9 +182,9 @@ sub _scanFilesystem {
 		&& $self->skipSubdirectories;
 	my $next = $rule->iter(@paths);
 	while (my $file = $next->()) {
-		my $stat = $self->__stat($file)
+		my %stat = $self->_stat($file)
 			or next; # Skip files that we cannot stat.
-		$fs_stats->{ abs_path($file) } = $stat;
+		$fs_stats->{ abs_path $file } = \%stat;
 	}
 
 	return $fs_stats;
@@ -318,7 +318,7 @@ sub __compileFilter {
 }
 
 # Originally taken from Filesys::Notify::Simple --Thanks Miyagawa
-sub __stat {
+sub _stat {
 	my ($self, $path ) = @_;
 
 	my @stat = stat $path;
@@ -327,13 +327,13 @@ sub __stat {
 	# symlinks (at least under ext4).
 	return unless @stat;
 
-	return {
+	return (
 		path => $path,
 		mtime => $stat[9],
 		size => $stat[7],
 		mode => $stat[2],
 		is_directory => -d _,
-	};
+	);
 }
 
 # Taken from AnyEvent::Filesys::Notify.
