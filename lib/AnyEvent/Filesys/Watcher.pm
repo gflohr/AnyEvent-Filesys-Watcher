@@ -283,8 +283,9 @@ sub _postProcessEvents {}
 sub _applyFilter {
 	my ($self, @events) = @_;
 
+$DB::single = 1;
 	my $cb = $self->filter;
-	return grep { $cb->( $_->path ) } @events;
+	return grep { $cb->($_) } @events;
 }
 
 sub _oldFilesystem {
@@ -311,7 +312,12 @@ sub __compileFilter {
 	my $reftype = reftype $filter;
 	if ('REGEXP' eq $reftype) {
 		my $regexp = $filter;
-		$filter = sub { shift =~ $regexp };
+		$filter = sub {
+			my $event = shift;
+			my $path = $event->path;
+			my $result = $path =~ $regexp;
+			return $result;
+		};
 	} elsif ($reftype ne 'CODE') {
 		require Carp;
 		Carp::confess(__("The filter must either be a regular expression or"

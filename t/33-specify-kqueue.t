@@ -23,7 +23,7 @@ create_test_files qw(one/sub/1);
 
 my $n = AnyEvent::Filesys::Watcher->new(
 	directories => [ map { File::Spec->catfile($dir, $_) } qw(one two) ],
-	filter => sub { shift !~ qr{/ignoreme$} },
+	filter => sub { shift->path !~ qr{/ignoreme$} },
 	callback => sub { receive_event(@_) },
 	backend => 'KQueue',
 );

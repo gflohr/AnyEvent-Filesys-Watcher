@@ -225,6 +225,8 @@ A robust implementation using this module should follow two rules:
 
 =over 4
 
+=item If you specify a subroutine as a filter, that subroutine receives events as arguments, not paths.
+
 =item The constructor argument "no_external" is ignored.
 
 =item There is no method "no_external()".

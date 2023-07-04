@@ -30,8 +30,8 @@ sub run_test {
 	# Create a file, which will be delete in the callback
 	received_events(
 		sub { create_test_files('foo') },
-		'foo' => 'created',
 		'create a file',
+		'foo' => 'created',
 	);
 
 	# Did we get notified of the delete?
