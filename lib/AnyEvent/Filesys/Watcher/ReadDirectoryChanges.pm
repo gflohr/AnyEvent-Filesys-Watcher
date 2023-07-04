@@ -122,8 +122,13 @@ sub __cookEvents {
 				# contents of the directory changes.  This is technically
 				# correct but all other backends do not report this event.
 				next;
-			} elsif ($events{$path} && 'created' eq $events{$path}->type) {
-				# The fallback backend only reports a 'created' event.
+			} elsif ($events{$path}
+			         && ('created' eq $events{$path}->type
+			             || 'modified' eq $events{$path}->type)) {
+				# If a file was created, a 'created' and a 'modified' event
+				# are generated.  The second event should be discarded.
+				#
+				# The same sometimes happens, when a file is modified.
 				next;
 			}
 		} elsif ('deleted' eq $type) {

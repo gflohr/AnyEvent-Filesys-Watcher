@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests;
+use Test::More;
 use File::Spec;
 
 use AnyEvent::Filesys::Watcher;
@@ -31,7 +31,8 @@ isa_ok $n, 'AnyEvent::Filesys::Watcher::Fallback',
 diag "This might take a few seconds to run...";
 
 # ls: one/1 one/sub/1 +one/sub/2 two/1
-received_events(sub { create_test_files(qw(one/sub/2)) },
+received_events(
+	sub { create_test_files(qw(one/sub/2)) },
 	'create a file',
 	'one/sub/2' => 'created',
 );

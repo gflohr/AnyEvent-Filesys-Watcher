@@ -134,6 +134,9 @@ sub compare_ok {
 
 	foreach my $event (@{$received}) {
 		my $path = File::Spec->abs2rel($event->path, $dir);
+		# This is not portable but good enough for our test cases.  Otherwise
+		# we would have to drag in Path::Class as a dependency.
+		$path =~ s{\\}{/}g;
 		my $expected_type = delete $expected->{$path};
 		if (!defined $expected_type) {
 			my $type = $event->type;

@@ -1,23 +1,26 @@
 use strict;
 use warnings;
 
+use Test::More;
+
 BEGIN {
 	my $module;
 	if ($^O eq 'linux') {
 		$module = 'Linux/Inotify2.pm';
 	} elsif ($^O eq 'darwin') {
 		$module = 'Mac/FSEvents.pm';
+	} elsif ($^O eq 'MSWin32' || $^O eq 'cygwin') {
+		$module = 'Filesys/Notify/Win32/ReadDirectoryChanges.pm';
 	} elsif ($^O =~ /bsd/i) {
 		$module = 'IO/KQueue.pm';
 	}
 
 	if ($module) {
 		eval { require $module };
-		plan skip_all => 'no os-specific backend installed' if $@;
+		plan(skip_all => "no os-specific backend installed") if $@;
 	}
 }
 
-use Test::More;
 use File::Spec;
 
 use lib 't/lib';
@@ -64,8 +67,8 @@ diag "This might take a few seconds to run...";
 # ls: one/1 one/sub/1 +one/sub/2 two/1
 received_events(
 	sub { create_test_files(qw(one/sub/2)) },
-	'create a file',
-	'one/sub/2' => 'created',
+	'create a filex',
+	'one/sub/2', 'created',
 );
 
 # ls: one/1 +one/2 one/sub/1 one/sub/2 two/1 +two/sub/2

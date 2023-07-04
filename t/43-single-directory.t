@@ -8,11 +8,12 @@ use File::Spec;
 
 use AnyEvent::Filesys::Watcher;
 use lib 't/lib';
-use TestSupport qw(create_test_files $dir received_events receive_event);
+use TestSupport qw(create_test_files $dir received_events receive_event
+	catch_trailing_events);
 
 $|++;
 
-create_test_files(qw(one/1));
+create_test_files qw(one/1);
 ## ls: one/1 
 
 my $n = AnyEvent::Filesys::Watcher->new(

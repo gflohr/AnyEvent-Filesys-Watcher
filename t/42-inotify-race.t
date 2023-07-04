@@ -11,11 +11,12 @@ use Test::More;
 use AnyEvent::Filesys::Watcher;
 use lib 't/lib';
 use TestSupport qw(create_test_files delete_test_files move_test_files
-	modify_attrs_on_test_files $dir received_events receive_event);
+	modify_attrs_on_test_files $dir received_events receive_event
+	catch_trailing_events);
 
 $|++;
 
-create_test_files(qw(one/1 two/1));
+create_test_files qw(one/1 two/1);
 ## ls: one/1 two/1
 
 my $n = AnyEvent::Filesys::Watcher->new(
