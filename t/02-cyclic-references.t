@@ -18,7 +18,7 @@ use AnyEvent::Filesys::Watcher;
 $SIG{__WARN__} = sub {
 	my ($msg) = @_;
 
-	if ($msg !~ m{^Unhandled type: (?:GLOB|REGEXP) at /.*/Devel/Cycle.pm line [0-9]+}) {
+	if ($msg !~ m{^Unhandled type: (?:GLOB|REGEXP|OBJECT) at /.*/Devel/Cycle.pm line [0-9]+}) {
 		print STDERR $msg;
 	}
 };
