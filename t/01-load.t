@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+
 use Test::More;
 use File::Find;
 
@@ -42,5 +43,5 @@ BEGIN {
 		},
 		'lib'
 	);
-	done_testing();
+	done_testing;
 }

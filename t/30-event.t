@@ -1,10 +1,5 @@
-use Test::More;
-
 use strict;
 use warnings;
-use File::Spec;
-use lib 't/lib';
-$|++;
 
 BEGIN {
 	my $module;
@@ -22,15 +17,19 @@ BEGIN {
 	}
 }
 
-use TestSupport qw(create_test_files delete_test_files move_test_files
-	modify_attrs_on_test_files $dir received_events receive_event);
+use Test::More;
+use File::Spec;
 
+use lib 't/lib';
+$|++;
 use AnyEvent::Filesys::Watcher;
-use AnyEvent::Impl::Perl;
+use TestSupport qw(create_test_files delete_test_files move_test_files
+	modify_attrs_on_test_files $dir received_events receive_event
+	catch_trailing_events);
 
-create_test_files(qw(one/1));
-create_test_files(qw(two/1));
-create_test_files(qw(one/sub/1));
+create_test_files qw(one/1);
+create_test_files qw(two/1);
+create_test_files qw(one/sub/1);
 ## ls: one/1 one/sub/1 two/1
 
 my $n = AnyEvent::Filesys::Watcher->new(
@@ -38,17 +37,23 @@ my $n = AnyEvent::Filesys::Watcher->new(
 	filter => sub { shift !~ qr{/ignoreme$} },
 	callback => sub { receive_event(@_) },
 );
-isa_ok($n, 'AnyEvent::Filesys::Watcher' );
+isa_ok $n, 'AnyEvent::Filesys::Watcher';
 
 SKIP: {
 	skip "not sure which os we are on", 1
-		unless $^O =~ /linux|darwin|bsd/i;
+		unless $^O =~ /linux|darwin|bsd|MSWin32|cygwin/i;
 	isa_ok($n, 'AnyEvent::Filesys::Watcher::Inotify2',
 		'... with the linux backend')
 		if $^O eq 'linux';
 	isa_ok($n, 'AnyEvent::Filesys::Watcher::FSEvents',
 		'... with the mac backend')
 		if $^O eq 'darwin';
+	isa_ok($n, 'AnyEvent::Filesys::Watcher::ReadDirectoryChanges',
+		'... with the MS-DOS backend')
+		if $^O eq 'MSWin32';
+	isa_ok($n, 'AnyEvent::Filesys::Watcher::ReadDirectoryChanges',
+		'... with the MS-DOS backend')
+		if $^O eq 'cygwin';
 	isa_ok($n, 'AnyEvent::Filesys::Watcher::KQueue',
 		'... with the bsd backend')
 		if $^O =~ /bsd/;
@@ -58,30 +63,43 @@ diag "This might take a few seconds to run...";
 
 # ls: one/1 one/sub/1 +one/sub/2 two/1
 received_events(sub { create_test_files(qw(one/sub/2)) },
-	'create a file', qw(created) );
+	'create a file',
+	'one/sub/2' => 'created',
+);
 
 # ls: one/1 +one/2 one/sub/1 one/sub/2 two/1 +two/sub/2
 received_events(
 	sub { create_test_files(qw(one/2 two/sub/2)) },
 	'create file in new subdir',
-	qw(created created created)
+	'one/2' => 'created',
+	'two/sub' => 'created',
+	'two/sub/2' => 'created',
 );
 
 # ls: one/1 ~one/2 one/sub/1 one/sub/2 two/1 two/sub/2
 received_events(sub { create_test_files(qw(one/2)) },
-	'modify existing file', qw(modified) );
+	'modify existing file',
+	'one/2' => 'modified',
+);
 
 # ls: one/1 one/2 one/sub/1 one/sub/2 two/1 two/sub -two/sub/2
 received_events(sub { delete_test_files(qw(two/sub/2)) },
-	'deletes a file', qw(deleted) );
+	'deletes a file',
+	'two/sub/2' => 'deleted',
+);
 
 # ls: one/1 one/2 +one/ignoreme +one/3 one/sub/1 one/sub/2 two/1 two/sub
 received_events(sub { create_test_files(qw(one/ignoreme one/3)) },
-	'creates two files one should be ignored', qw(created) );
+	'creates two files one should be ignored',
+	'one/3' => 'created',
+);
 
 # ls: one/1 one/2 one/ignoreme -one/3 +one/5 one/sub/1 one/sub/2 two/1 two/sub
 received_events(sub { move_test_files('one/3' => 'one/5' ) },
-	'move files', qw(deleted created) );
+	'move files',
+	'one/3' => 'deleted',
+	'one/5' => 'created',
+);
 
 SKIP: {
 	skip "skip attr mods on Win32", 1 if ($^O eq 'MSWin32' || $^O eq 'cygwin');
@@ -90,15 +108,17 @@ SKIP: {
 	received_events(
 		sub { modify_attrs_on_test_files(qw(two/1 two/sub)) },
 		'modify attributes',
-		qw(modified modified)
+		'two/1' => 'modified',
+		'two/sub' => 'modified',
 	);
 }
 
 # ls: one/1 one/2 one/ignoreme +one/onlyme +one/4 one/5 one/sub/1 one/sub/2 two/1 two/sub
 $n->filter(qr/onlyme/);
 received_events(sub { create_test_files(qw(one/onlyme one/4)) },
-	'filter test', qw(created) );
+	'filter test',
+	'one/onlyme' => 'created',
+);
 
-ok(1, '... arrived' );
-
+catch_trailing_events;
 done_testing;

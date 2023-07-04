@@ -1,7 +1,7 @@
-use Test::More;
-
 use strict;
 use warnings;
+
+use Test::More;
 
 use AnyEvent::Filesys::Watcher;
 
