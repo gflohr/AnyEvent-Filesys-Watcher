@@ -102,7 +102,7 @@ sub _new {
 		}
 	}
 
-	$args{interval} = 2 if !exists $args{interval};
+	$args{interval} = 1 if !exists $args{interval};
 	$args{directories} = [$args{directories}]
 		if !ref $args{directories};
 	if (exists $args{filter}
