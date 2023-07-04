@@ -77,19 +77,22 @@ received_events(sub { delete_test_files(qw(one/2)) },
 	'one/2' => 'deleted',
 );
 
-# ls: one/1 one/sub/1 +one/sub/2 two/1
-received_events(sub { create_test_files(qw(one/sub/2)) },
+# ls: one/1 +one/2 one/sub/1 +one/sub/2 two/1
+received_events(sub { create_test_files(qw(one/sub/2 one/2)) },
 	'create a file in subdir',
+	'one/2' => 'created',
 );
 
-# ls: one/1 one/sub/1 ~one/sub/2 two/1
-received_events(sub { create_test_files(qw(one/sub/2)) },
+# ls: one/1 ~one/2 one/sub/1 ~one/sub/2 two/1
+received_events(sub { create_test_files(qw(one/sub/2 one/2)) },
 	'modify a file in subdir',
+	'one/2' => 'modified',
 );
 
-# ls: one/1 one/sub/1 -one/sub/2 two/1
-received_events(sub { delete_test_files(qw(one/sub/2)) },
+# ls: one/1 -one/2 one/sub/1 -one/sub/2 two/1
+received_events(sub { delete_test_files(qw(one/sub/2 one/2)) },
 	'delete a file in subdir',
+	'one/2' => 'deleted',
 );
 
 SKIP: {
@@ -101,9 +104,13 @@ SKIP: {
 		'two/1' => 'modified',
 	);
 
-	# ls: one/1 ~one/sub/1 two/1
-	received_events(sub { modify_attrs_on_test_files(qw(one/sub/1)) },
+	# ls: one/1 +one/2 ~one/sub/1 two/1
+	received_events(sub {
+		modify_attrs_on_test_files(qw(one/sub/1));
+		create_test_files(qw(one/2));
+		},
 		'modify attributes in a subdir',
+		'one/2' => 'created',
 	);
 }
 
