@@ -8,6 +8,7 @@ use AnyEvent;
 use Filesys::Notify::Win32::ReadDirectoryChanges;
 use Scalar::Util qw(weaken);
 use File::Spec;
+use Cwd;
 use AnyEvent::Filesys::Watcher::Event;
 
 use base qw(AnyEvent::Filesys::Watcher);
@@ -17,13 +18,9 @@ sub new {
 
 	my $self = $class->SUPER::_new(%args);
 
+	$self->{__base_directory} = Cwd::cwd();
 	my $watcher = Filesys::Notify::Win32::ReadDirectoryChanges->new;
-	foreach (@{$self->directories}) {
-		# Make sure the original directory does not get overwritten.
-		my $directory = $_;
-		if (!File::Spec->file_name_is_absolute($directory)) {
-			$directory = File::Spec->rel2abs($directory);
-		}
+	foreach my $directory (@{$self->directories}) {
 		eval {
 			$watcher->watch_directory(path => $directory, subtree => 1);
 		};
@@ -40,7 +37,7 @@ sub new {
 		cb => sub {
 			if ($watcher->queue->pending) {
 				my @raw_events = $watcher->queue->dequeue;
-				my @events = $alter_ego->_translateEvents(@raw_events);
+				my @events = $alter_ego->_transformEvents(@raw_events);
 
 				# Somethimes, there is a lone "renamed" event which gets
 				# ignored.
@@ -68,39 +65,32 @@ sub _parseEvents {
 	return @events;
 }
 
-sub _translateEvents {
+sub _transformEvents {
 	my ($self, @all_events) = @_;
 
+	my %events;
 	my @events;
 	for my $event (@all_events) {
 		my $action = $event->{action};
 		my $path = $event->{path};
 
-		my $is_directory = -d $path;
 		if ('removed' eq $action || 'old_name' eq $action) {
 			$action = 'deleted';
 		} elsif ('added' eq $action || 'new_name' eq $action) {
-			# FIXME! Check if the file had been overwritten (modified) or
-			# created.
 			$action = 'created';
 		} elsif ('renamed' eq $action) {
 			# Not needed.
 			next;
 		} elsif ('unknown' eq $action) {
 			die __"Error: Probably too many files inside watched directories.\n";
-		} elsif ('modified' eq $action) {
-			if ($is_directory && !$self->_directoryWrites) {
-				# MS-DOS generates modified events for the directory if the
-				# contents of the directory has changed.  This is actually
-				# correct because the directory file has really changed.  But
-				# the other backends do not create such events, and so do
-				# we unless explicitely requested.
-				next;
-			}
-		} else {
+		} elsif ('modified' ne $action) {
 			die __x("unknown action '{action}' for path '{path}'"
 					. " (should not happen)",
 					action => $action, path => $path);
+		}
+
+		if (!File::Spec->file_name_is_absolute($path)) {
+			$path = File::Spec->rel2abs($path, $self->{__base_directory});
 		}
 
 		push @events, AnyEvent::Filesys::Watcher::Event->new(
@@ -110,7 +100,57 @@ sub _translateEvents {
 		);
 	}
 
+	@events = $self->__cookEvents(@events);
+
 	return $self->_applyFilter(@events);
+}
+
+sub __cookEvents {
+	my ($self, @raw_events) = @_;
+
+	my %events;
+	my @events;
+	my $old_fs = $self->_oldFilesystem;
+	RAW_EVENT: for my $i (0 .. $#raw_events) {
+		my $event = $raw_events[$i];
+		my $type = $event->type;
+		my $path = $event->path;
+
+		if ('modified' eq $type) {
+			if ($event->isDirectory) {
+				# Only MS-DOS reports changes to the directories, when the
+				# contents of the directory changes.  This is technically
+				# correct but all other backends do not report this event.
+				next;
+			} elsif ($events{$path} && 'created' eq $events{$path}->type) {
+				# The fallback backend only reports a 'created' event.
+				next;
+			}
+		} elsif ('deleted' eq $type) {
+			# If a file is renamed to an existing file, then a 'delete', and
+			# then a 'create' event is triggered.  In this case, we want to
+			# ignore the gratuituous 'delete' event, and change the 'created'
+			# to 'modified'.
+			foreach my $j ($i + 1 .. $#raw_events) {
+				my $other = $raw_events[$j];
+				if ('created' eq $other->type
+					&& $path eq $other->type
+					&& !!$event->isDirectory == !!$other->isDirectory) {
+					$raw_events[$j] = AnyEvent::Filesys::Watcher::Event->new(
+						path => $path,
+						type => 'modified',
+						is_directory => $event->isDirectory,
+					);
+					next RAW_EVENT;
+				}
+			}
+		}
+
+		push @events, $event;
+		$events{$path} = $event;
+	}
+
+	return @events;
 }
 
 1;

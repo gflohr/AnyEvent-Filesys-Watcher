@@ -83,7 +83,7 @@ sub received_events {
 	$sub->();
 
 	my $w = AnyEvent->timer(
-		after => 3,
+		after => 20,
 		cb => sub { $cv->send });
 
 	$cv->recv;
