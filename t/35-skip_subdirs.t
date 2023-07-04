@@ -1,15 +1,14 @@
 use strict;
 use warnings;
-
-use Test::More;
 use File::Spec;
 
 use AnyEvent::Filesys::Watcher;
 use lib 't/lib';
-$|++;
 use TestSupport qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event
 	catch_trailing_events);
+
+$|++;
 
 my $no_backend;
 

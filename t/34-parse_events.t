@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 
+<<<<<<< HEAD
 use Test::More;
 use File::Spec;
 
@@ -10,6 +11,13 @@ use lib 't/lib';
 use TestSupport qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event
 	catch_trailling_events);
+=======
+use TestSupport qw(create_test_files delete_test_files move_test_files
+	modify_attrs_on_test_files $dir received_events receive_event
+	catch_trailing_events);
+
+use AnyEvent::Filesys::Watcher;
+>>>>>>> 1e826255585a179dd791a961b5a74fc4a49fb19b
 
 $|++;
 create_test_files(qw(one/1));
@@ -29,14 +37,20 @@ diag "This might take a few seconds to run...";
 
 # ls: one/1 one/sub/1 +one/sub/2 two/1
 received_events(sub { create_test_files(qw(one/sub/2)) },
-	'create a file', qw(created) );
+	'create a file',
+	'one/sub/2' => 'created',
+);
 
 # ls: one/1 +one/2 one/sub/1 one/sub/2 two/1 +two/sub/2
 received_events(
 	sub { create_test_files(qw(one/2 two/sub/2)) },
 	'create file in new subdir',
 	'one/2' => 'created',
+<<<<<<< HEAD
 	'one/sub' => 'created',
+=======
+	'two/sub' => 'created',
+>>>>>>> 1e826255585a179dd791a961b5a74fc4a49fb19b
 	'two/sub/2' => 'created',
 );
 

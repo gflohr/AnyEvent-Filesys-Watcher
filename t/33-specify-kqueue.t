@@ -11,12 +11,9 @@ use TestSupport qw(create_test_files delete_test_files move_test_files
 	catch_trailing_events);
 
 use AnyEvent::Filesys::Watcher;
-use AnyEvent::Impl::Perl;
 
 unless ($^O eq 'darwin' and eval { require IO::KQueue; 1; }) {
 	plan skip_all => 'Test only on Mac with IO::KQueue';
-} else {
-	plan tests => 11;
 }
 
 create_test_files qw(one/1);
@@ -52,19 +49,22 @@ received_events(
 );
 
 # ls: one/1 ~one/2 one/sub/1 one/sub/2 two/1 two/sub/2
-received_events(sub { create_test_files(qw(one/2)) },
+received_events(
+	sub { create_test_files(qw(one/2)) },
 	'modify existing file',
 	'one/2' => 'modified',
 );
 
 # ls: one/1 one/2 one/sub/1 one/sub/2 two/1 two/sub -two/sub/2
-received_events(sub { delete_test_files(qw(two/sub/2)) },
+received_events(
+	sub { delete_test_files(qw(two/sub/2)) },
 	'deletes a file',
-	'two/sub/2' => 'deleted',
+	'two/sub/2' =>  'deleted'
 );
 
 # ls: one/1 one/2 +one/ignoreme +one/3 one/sub/1 one/sub/2 two/1 two/sub
-received_events(sub { create_test_files(qw(one/ignoreme one/3)) },
+received_events(
+	sub { create_test_files(qw(one/ignoreme one/3)) },
 	'creates two files one should be ignored',
 	'one/3' => 'created',
 );
@@ -90,7 +90,8 @@ SKIP: {
 
 # ls: one/1 one/2 one/ignoreme +one/onlyme +one/4 one/5 one/sub/1 one/sub/2 two/1 two/sub
 $n->filter(qr/onlyme/);
-received_events(sub { create_test_files(qw(one/onlyme one/4)) },
+received_events(
+	sub { create_test_files(qw(one/onlyme one/4)) },
 	'filter test',
 	'one/onlyme' => 'created',
 );
