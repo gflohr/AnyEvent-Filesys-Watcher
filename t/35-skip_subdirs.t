@@ -3,14 +3,14 @@ use Test::More;
 use strict;
 use warnings;
 use File::Spec;
-use lib 't/lib';
-$|++;
-
-use TestSupport qw(create_test_files delete_test_files move_test_files
-	modify_attrs_on_test_files $dir received_events receive_event);
 
 use AnyEvent::Filesys::Watcher;
-use AnyEvent::Impl::Perl;
+use lib 't/lib';
+use TestSupport qw(create_test_files delete_test_files move_test_files
+	modify_attrs_on_test_files $dir received_events receive_event
+	catch_trailing_events);
+
+$|++;
 
 my $no_backend;
 

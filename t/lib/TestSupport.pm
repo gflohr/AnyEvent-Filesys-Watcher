@@ -6,14 +6,19 @@ use File::Temp qw(tempdir);
 use File::Path;
 use File::Basename;
 use File::Copy qw(move);
+use File::Spec;
+use Cwd;
 use Test::More;
 use autodie;
 
 use Exporter qw(import);
 our @EXPORT_OK = qw(create_test_files delete_test_files move_test_files
-	modify_attrs_on_test_files $dir received_events receive_event);
+	modify_attrs_on_test_files $dir received_events receive_event
+	catch_trailing_events);
 
-our $dir = tempdir(CLEANUP => 1);
+# On the Mac, TMPDIR is a symbolic link.  We have to resolve that with
+# Cwd::realpath in order to be able to compare paths.
+our $dir = Cwd::realpath(tempdir(CLEANUP => 1));
 my $size = 1;
 
 sub create_test_files {
@@ -62,25 +67,54 @@ sub modify_attrs_on_test_files {
 	}
 }
 
-our @received = ();
-our @expected = ();
-our @msgs	 = ();
+our @received;
+our %expected;
 our $cv;
 
 sub receive_event {
 	push @received, @_;
-	push @msgs,
-	  "--- received: " . join(',', map { $_->type . ":" . $_->path } @_);
-	$cv->end for @_;
+
+	if (@received == keys %expected) {
+		# This may miss unexpected events coming in but these events will
+		# make the next test case fail.  We should however wait for one second
+		# at the end to catch them.
+		$cv->send;
+	}
+}
+
+sub catch_trailing_events {
+	my $stop = AnyEvent->condvar;
+
+	# Catch at most 100 events.
+	%expected = map { $_ => 1 } (1 .. 100);
+
+	my $count = 0;
+	my $t = AnyEvent->timer(
+		after => 0.1,
+		interval => 0.1,
+		cb => sub {
+			if (@received) {
+				compare_ok(\@received, {}, 'trailing garbage events');
+				$stop->send; # Fail fast.
+			} elsif (++$count > 10) {
+				ok 1, 'no trailing garbage events';
+				$stop->send;
+			}
+		},
+	);
+
+	$stop->recv;
 }
 
 sub received_events {
-	my ($sub, $desc, @expected) = @_;
+	my $setup = shift;
+	my $description = shift;
+
+	%expected = @_;
 
 	$cv = AnyEvent->condvar;
-	$cv->begin for @expected;
 
-	$sub->();
+	$setup->();
 
 	my $w = AnyEvent->timer(
 		after => 20,
@@ -88,35 +122,30 @@ sub received_events {
 
 	$cv->recv;
 
-	my @received_type = map { $_->type } @received;
-	compare_ok(\@received_type, \@expected, $desc) or do {
-		diag sprintf "... expected: %s\n... received: %s\n",
-			join(',', @expected), join(',', @received_type);
-		diag join "\n", @msgs;
-	};
-
-	@received = ();
-	@msgs	 = ();
+	compare_ok(\@received, \%expected, $description);
+	undef @received;
 }
 
 sub compare_ok {
-	my ($rec_ref, $exp_ref, $desc) = @_;
-	$desc ||= "compare arrays";
-	my @rec = @$rec_ref;
-	my @exp = @$exp_ref;
+	my ($received, $expected, $description) = @_;
+	$description ||= "compare events";
 
-	while (scalar @rec or scalar @exp){
-		no warnings 'uninitialized';
-		my ($rec,$exp) = (shift @rec, shift @exp);
-		next if $rec eq $exp || "$rec?" eq $exp;
-		if ($exp =~ /\?$/){ # optional
-			unshift @rec, $rec if defined $rec;
+	$description .= ':';
+
+	foreach my $event (@{$received}) {
+		my $path = File::Spec->abs2rel($event->path, $dir);
+		my $expected_type = delete $expected->{$path};
+		if (!defined $expected_type) {
+			my $type = $event->type;
+			ok 0, "$description $path: unexpected event of type $type";
 			next;
 		}
-		return ok(0, $desc);
+		is $event->type, $expected_type, "$description $path";
 	}
 
-	return ok(1, $desc);
+	foreach my $path (keys %$expected) {
+		ok 0, "$description $path: no event received";
+	}
 }
 
 1;
