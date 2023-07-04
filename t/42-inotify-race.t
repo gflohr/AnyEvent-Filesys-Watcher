@@ -21,7 +21,7 @@ create_test_files qw(one/1 two/1);
 
 my $n = AnyEvent::Filesys::Watcher->new(
 	directories => [ map { File::Spec->catfile($dir, $_) } qw(one two) ],
-	filter => sub { shift->path !~ m{/ignoreme/} },
+	filter => sub { shift->path !~ m{/ignoreme(?:/|$)} },
 	callback => sub { receive_event(@_) },
 	parse_events => 1,
 );
@@ -46,9 +46,9 @@ received_events(
 ## ls: one/sub/1 one/sub/2 one/sub/ignoreme/1 one/sub/3 two/1
 
 received_events(
-	sub { create_test_files(qw(two/sub/ignoreme/sub/1 two/sub/42)) },
-	'two/sub/42' => 'created',
-	'create subdir and two files, one ignored',
+	sub { create_test_files(qw(two/sub/ignoreme/sub/1)) },
+	'create subdir and ignore the rest',
+	'two/sub' => 'created',
 );
 
 ## ls: one/sub/1 one/sub/2 one/sub/ignoreme/1 one/sub/3 two/1 tow/sub/ignoreme/sub/1
