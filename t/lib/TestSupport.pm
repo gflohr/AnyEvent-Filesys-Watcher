@@ -2,6 +2,7 @@ package TestSupport;
 
 use strict;
 use warnings;
+
 use File::Temp qw(tempdir);
 use File::Path;
 use File::Basename;
@@ -14,12 +15,37 @@ use autodie;
 use Exporter qw(import);
 our @EXPORT_OK = qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event
-	catch_trailing_events);
+	catch_trailing_events next_testing_done_file);
+
+sub create_test_files;
+sub delete_test_files;
+sub move_test_files;
+sub modify_attrs_on_test_files;
+sub received_events;
+sub receive_event;
 
 # On the Mac, TMPDIR is a symbolic link.  We have to resolve that with
 # Cwd::realpath in order to be able to compare paths.
-our $dir = Cwd::realpath(tempdir(CLEANUP => 1));
+our $dir = Cwd::realpath(tempdir CLEANUP => 1);
 my $size = 1;
+
+# For the (preliminary) MS-DOS implementation we had to significantly increase
+# the waiting timeout at the end of the tests.  Therefore, receive_events()
+# now signals that (probably) no more events will be coming by creating a
+# file.  If the callback gets a notification for this file it will immediately
+# send to the condition variable to stop the test.
+#
+# If more, unexpected, events would be coming in, the next test will fail.
+# Only the last test would be critical because for it, such trailing garbage
+# could not be detected.  If that garbage is coming in in reasonable time,
+# we will still detected it if catch_trailing_events() is called.  And other
+# cases are so unlikely that we will ignore them.
+our $test_count = 0;
+our $testing_done_format = 'one/testing-done-%u';
+
+sub next_testing_done_file {
+	sprintf $testing_done_format, $test_count + 1;
+}
 
 sub create_test_files {
 	my (@files) = @_;
@@ -72,14 +98,19 @@ our %expected;
 our $cv;
 
 sub receive_event {
-	push @received, @_;
+	my (@events) = @_;
 
-	if (@received == keys %expected) {
-		# This may miss unexpected events coming in but these events will
-		# make the next test case fail.  We should however wait for one second
-		# at the end to catch them.
-		$cv->send;
+	my $testing_file = sprintf $testing_done_format, $test_count;
+	my $ready;
+	foreach my $event (@events) {
+		if ($event->path =~ m{/$testing_file$}) {
+			$ready = 1;
+		} else {
+			push @received, $event;
+		}
 	}
+
+	$cv->send if $ready;
 }
 
 sub catch_trailing_events {
@@ -91,7 +122,7 @@ sub catch_trailing_events {
 	my $count = 0;
 	my $t = AnyEvent->timer(
 		after => 0.1,
-		interval => 0.1,
+		interval => 0.2,
 		cb => sub {
 			if (@received) {
 				compare_ok(\@received, {}, 'trailing garbage events');
@@ -116,9 +147,15 @@ sub received_events {
 
 	$setup->();
 
+	my $testing_file = sprintf $testing_done_format, ++$test_count;
+	create_test_files $testing_file;
+
 	my $w = AnyEvent->timer(
 		after => 20,
-		cb => sub { $cv->send });
+		cb => sub {
+			ok 0, "$description: lame test case (should not happen)";
+			$cv->send;
+		});
 
 	$cv->recv;
 

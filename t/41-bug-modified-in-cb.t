@@ -7,9 +7,12 @@ use AnyEvent::Filesys::Watcher;
 use lib 't/lib';
 use TestSupport qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event
-	catch_trailing_events);
+	catch_trailing_events next_testing_done_file);
 
 $|++;
+
+# Prevent the directory 'one' from being created by the TestSupport library.
+$TestSupport::testing_done_format = 'testing-done-%u';
 
 sub run_test {
 	my %extra_config = @_;
@@ -20,8 +23,12 @@ sub run_test {
 			receive_event(@_);
 
 			# This call back deletes any created files
-			my $e = $_[0];
-			unlink $e->path if $e->type eq 'created';
+			foreach my $event (@_) {
+				if ($event->path !~ m{/testing-done-[1-9][0-9]*$}) {
+					unlink $event->path if $event->type eq 'created'
+						&& !$event->isDirectory;
+				}
+			}
 		},
 		%extra_config,
 	);
@@ -31,7 +38,7 @@ sub run_test {
 	received_events(
 		sub { create_test_files('foo') },
 		'create a file',
-		'foo' => 'created',
+		foo => 'created',
 	);
 
 	# Did we get notified of the delete?

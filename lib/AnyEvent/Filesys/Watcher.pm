@@ -283,9 +283,8 @@ sub _postProcessEvents {}
 sub _applyFilter {
 	my ($self, @events) = @_;
 
-$DB::single = 1;
-	my $cb = $self->filter;
-	return grep { $cb->($_) } @events;
+	my $callback = $self->filter;
+	return grep { $callback->($_) } @events;
 }
 
 sub _oldFilesystem {
