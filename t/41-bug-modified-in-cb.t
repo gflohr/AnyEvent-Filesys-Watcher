@@ -7,7 +7,7 @@ use AnyEvent::Filesys::Watcher;
 use lib 't/lib';
 use TestSupport qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event
-	catch_trailing_events next_testing_done_file);
+	catch_trailing_events next_testing_done_file EXISTS DELETED);
 
 $|++;
 
@@ -38,13 +38,13 @@ sub run_test {
 	received_events(
 		sub { create_test_files('foo') },
 		'create a file',
-		foo => 'created',
+		foo => EXISTS,
 	);
 
 	# Did we get notified of the delete?
 	received_events(
 		sub { }, 'deleted the file',
-		'foo' => 'deleted',
+		'foo' => DELETED,
 	);
 }
 

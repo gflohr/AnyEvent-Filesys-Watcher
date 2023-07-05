@@ -8,7 +8,7 @@ use AnyEvent::Filesys::Watcher;
 use lib 't/lib';
 use TestSupport qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event
-	catch_trailing_events);
+	catch_trailing_events EXISTS DELETED);
 
 $|++;
 
@@ -62,37 +62,37 @@ diag "This might take a few seconds to run...";
 # ls: one/1 +one/2 one/sub/1 two/1
 received_events(sub { create_test_files(qw(one/2)) },
 	'create a file',
-	'one/2' => 'created',
+	'one/2' => EXISTS,
 );
 
 # ls: one/1 ~one/2 one/sub/1 two/1
 received_events(sub { create_test_files(qw(one/2)) },
 	'modify a file',
-	'one/2' => 'modified',
+	'one/2' => EXISTS,
 );
 
 # ls: one/1 -one/2 one/sub/1 two/1
 received_events(sub { delete_test_files(qw(one/2)) },
 	'delete a file',
-	'one/2' => 'deleted',
+	'one/2' => DELETED,
 );
 
 # ls: one/1 +one/2 one/sub/1 +one/sub/2 two/1
 received_events(sub { create_test_files(qw(one/sub/2 one/2)) },
 	'create a file in subdir',
-	'one/2' => 'created',
+	'one/2' => EXISTS,
 );
 
 # ls: one/1 ~one/2 one/sub/1 ~one/sub/2 two/1
 received_events(sub { create_test_files(qw(one/sub/2 one/2)) },
 	'modify a file in subdir',
-	'one/2' => 'modified',
+	'one/2' => EXISTS,
 );
 
 # ls: one/1 -one/2 one/sub/1 -one/sub/2 two/1
 received_events(sub { delete_test_files(qw(one/sub/2 one/2)) },
 	'delete a file in subdir',
-	'one/2' => 'deleted',
+	'one/2' => DELETED,
 );
 
 SKIP: {
@@ -101,7 +101,7 @@ SKIP: {
 	# ls: one/1 one/sub/1 ~two/1
 	received_events(sub { modify_attrs_on_test_files(qw(two/1)) },
 		'modify attributes',
-		'two/1' => 'modified',
+		'two/1' => EXISTS,
 	);
 
 	# ls: one/1 +one/2 ~one/sub/1 two/1
@@ -110,7 +110,7 @@ SKIP: {
 		create_test_files(qw(one/2));
 		},
 		'modify attributes in a subdir',
-		'one/2' => 'created',
+		'one/2' => EXISTS,
 	);
 }
 

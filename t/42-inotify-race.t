@@ -12,7 +12,7 @@ use AnyEvent::Filesys::Watcher;
 use lib 't/lib';
 use TestSupport qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event
-	catch_trailing_events);
+	catch_trailing_events EXISTS DELETED);
 
 $|++;
 
@@ -32,15 +32,15 @@ diag "This might take a few seconds to run...";
 received_events(
 	sub { create_test_files(qw(one/sub/2)) },
 	'create subdir and file',
-	'one/sub' => 'created',
-	'one/sub/2' => 'created',
+	'one/sub' => EXISTS,
+	'one/sub/2' => EXISTS,
 );
 
 ## ls: one/sub/1 one/sub/2 two/1
 received_events(
 	sub { create_test_files(qw(one/sub/ignoreme/1 one/sub/3)) },
 	'create two files in subdir, one ignored',
-	'one/sub/3' => 'created',
+	'one/sub/3' => EXISTS,
 );
 
 ## ls: one/sub/1 one/sub/2 one/sub/ignoreme/1 one/sub/3 two/1
@@ -48,7 +48,7 @@ received_events(
 received_events(
 	sub { create_test_files(qw(two/sub/ignoreme/sub/1)) },
 	'create subdir and ignore the rest',
-	'two/sub' => 'created',
+	'two/sub' => EXISTS,
 );
 
 ## ls: one/sub/1 one/sub/2 one/sub/ignoreme/1 one/sub/3 two/1 tow/sub/ignoreme/sub/1

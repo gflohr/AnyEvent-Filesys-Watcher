@@ -12,10 +12,14 @@ use Cwd;
 use Test::More;
 use autodie;
 
+use constant EXISTS => 1;
+use constant DELETED => 0;
+
 use Exporter qw(import);
+our @EXPORT = qw(EXISTS DELETED);
 our @EXPORT_OK = qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event
-	catch_trailing_events next_testing_done_file);
+	catch_trailing_events next_testing_done_file EXISTS DELETED);
 
 sub create_test_files;
 sub delete_test_files;
@@ -143,6 +147,14 @@ sub received_events {
 
 	%expected = @_;
 
+	foreach my $key (keys %expected) {
+		my $value = $expected{$key};
+		if ($value !~ /^0|1$/) {
+			require Carp;
+			Carp::croak("use boolean result (0 or 1)");
+		}
+	}
+
 	$cv = AnyEvent->condvar;
 
 	$setup->();
@@ -169,18 +181,44 @@ sub compare_ok {
 
 	$description .= ':';
 
+	my %got;
+	my %received_events;
+	# First translate the events to either EXISTS or DELETED.
 	foreach my $event (@{$received}) {
 		my $path = File::Spec->abs2rel($event->path, $dir);
 		# This is not portable but good enough for our test cases.  Otherwise
 		# we would have to drag in Path::Class as a dependency.
 		$path =~ s{\\}{/}g;
+		my $type = $event->type;
+		$received_events{$path} ||= [];
+		push @{$received_events{$path}}, $type;
+
+		if ('deleted' eq $type) {
+			$got{$path} = DELETED;
+		} else {
+			$got{$path} = EXISTS;
+		}
+	}
+
+	# Now match got versus expected.
+	foreach my $path (keys %got) {
 		my $expected_type = delete $expected->{$path};
 		if (!defined $expected_type) {
-			my $type = $event->type;
-			ok 0, "$description $path: unexpected event of type $type";
+			my $types = join ', ', @{$received_events{$path}};
+			ok 0, "$description $path: unexpected event of type(s) $types";
 			next;
 		}
-		is $event->type, $expected_type, "$description $path";
+		if (!!$expected_type != !!$got{$path}) {
+			if ($expected_type) {
+				ok 0, "$description $path: expected to be deleted but seems to exists";
+			} else {
+				ok 0, "$description $path: expected to exist but seems to be deleted";
+			}
+		} elsif ($expected_type) {
+			ok 1, "$description $path: seems to exist";
+		} else {
+			ok 1, "$description $path: seems to be deleted";
+		}
 	}
 
 	foreach my $path (keys %$expected) {

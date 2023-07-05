@@ -8,7 +8,7 @@ use AnyEvent::Filesys::Watcher;
 use lib 't/lib';
 use TestSupport qw(create_test_files delete_test_files move_test_files
   modify_attrs_on_test_files $dir received_events receive_event
-  catch_trailing_events next_testing_done_file);
+  catch_trailing_events next_testing_done_file EXISTS DELETED);
 
 $|++;
 
@@ -34,41 +34,41 @@ diag "This might take a few seconds to run...";
 received_events(
 	sub { create_test_files(qw(one/sub/2)) },
 	'create a file',
-	'one/sub/2' => 'created',
+	'one/sub/2' => EXISTS,
 );
 
 # ls: one/1 +one/2 one/sub/1 one/sub/2 two/1 +two/sub/2
 received_events(
 	sub { create_test_files(qw(one/2 two/sub/2)) },
 	'create file in new subdir',
-	'one/2' => 'created',
-	'two/sub' => 'created',
-	'two/sub/2' => 'created',
+	'one/2' => EXISTS,
+	'two/sub' => EXISTS,
+	'two/sub/2' => EXISTS,
 );
 
 # ls: one/1 ~one/2 one/sub/1 one/sub/2 two/1 two/sub/2
 received_events(sub { create_test_files(qw(one/2)) },
 	'modify existing file',
-	'one/2' => 'modified',
+	'one/2' => EXISTS,
 );
 
 # ls: one/1 one/2 one/sub/1 one/sub/2 two/1 two/sub -two/sub/2
 received_events(sub { delete_test_files(qw(two/sub/2)) },
 	'deletes a file',
-	'two/sub/2' => 'deleted',
+	'two/sub/2' => DELETED,
 );
 
 # ls: one/1 one/2 +one/ignoreme +one/3 one/sub/1 one/sub/2 two/1 two/sub
 received_events(sub { create_test_files(qw(one/ignoreme one/3)) },
 	'creates two files one should be ignored',
-	'one/3' => 'created',
+	'one/3' => EXISTS,
 );
 
 # ls: one/1 one/2 one/ignoreme -one/3 +one/5 one/sub/1 one/sub/2 two/1 two/sub
 received_events(sub { move_test_files('one/3' => 'one/5') },
 	'move files',
-	'one/3' => 'deleted',
-	'one/5' => 'created',
+	'one/3' => DELETED,
+	'one/5' => EXISTS,
 );
 
 SKIP: {
@@ -78,8 +78,8 @@ SKIP: {
 	received_events(
 		sub { modify_attrs_on_test_files(qw(two/1 two/sub)) },
 		'modify attributes',
-		'two/1' => 'modified',
-		'two/sub' => 'modified',
+		'two/1' => EXISTS,
+		'two/sub' => EXISTS,
 	);
 }
 
@@ -88,7 +88,7 @@ my $trigger_filename = next_testing_done_file;
 $n->filter(qr{/(?:onlyme|$trigger_filename)$});
 received_events(sub { create_test_files(qw(one/onlyme one/4)) },
 	'filter test',
-	'one/onlyme' => 'created',
+	'one/onlyme' => EXISTS,
 );
 
 catch_trailing_events;
