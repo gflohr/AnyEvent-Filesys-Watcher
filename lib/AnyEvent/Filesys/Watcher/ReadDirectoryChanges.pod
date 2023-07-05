@@ -1,10 +1,10 @@
 =head1 NAME
 
-AnyEvent::Filesys::Watcher::FSEvents - MacOS file system watcher
+AnyEvent::Filesys::Watcher::ReadDirectoryChanges - MS-DOS file system watcher
 
 =head1 SYNOPSIS
 
-    $watcher = AnyEvent::Filesys::Watcher::FSEvents->new(
+    $watcher = AnyEvent::Filesys::Watcher::FileSystemWatcher->new(
 		directories => ['lib', 't'],
 		callback => sub { warn "you're working too much"},
     );
@@ -12,25 +12,15 @@ AnyEvent::Filesys::Watcher::FSEvents - MacOS file system watcher
     # This has the same effect as:
 
     $watcher = AnyEvent::Filesys::Watcher->new(
-        backend => 'FSEvents',
+        backend => 'ReadDirectoryChanges',
         directories => ['lib', 't'],
         callback => sub { warn "you're working too much"},
     );
 
 =head1 DESCRIPTION
 
-This is the Mac OS backend for L<AnyEvent::Filesys::Watcher>.  It uses
-L<Mac::FSEvents> as the underlying implementation.
-
-=head1 INSTALLATION
-
-At the time of this writing, the version on CPAN is 0.14 and will most likely
-fail to build.  It fails with "Could not parse version string!".
-
-If you run into this problem, try to use the
-L<fork|https://github.com/skaji/Mac-FSEvents> instead. See
-L<https://github.com/glohr/AnyEvent-Filesys-Watcher/#installation> for more
-information.
+This is the MS-DOS backend for L<AnyEvent::Filesys::Watcher>.  It uses
+L<Filesys::Notify::Win32::ReadDirectoryChanges> as the underlying implementation.
 
 =head1 CONSTRUCTOR
 
@@ -66,18 +56,6 @@ L<AnyEvent::Filesys::Watcher::Events>.
 
 This argument is required.
 
-=item B<cb CALLBACK>
-
-This is an alias for the parameter B<callback>.
-
-This argument is required if the argument B<callback> has not been given.
-
-=item B<interval SECONDS>
-
-Specifies the time in fractional seconds between file system checks.
-
-Optional. The default is 1.0.
-
 =item B<filter FILTER>
 
 B<FILTER> should either be a regular expression or a code reference.  If this
@@ -90,10 +68,28 @@ should cause an event.
 
 Optional. By default, all events are passed through.
 
-=item <skip_subdirectories BOOLEAN>
+=item B<skip_subdirectories BOOLEAN>
 
 Skips subdirectories and anything in them while building a list of
 files/dirs to watch. Optional.
+
+=item B<parse_events BOOLEAN>
+
+If you pass a truthy value for this option, the events returned by the
+kernel are parsed in order to generate the L<AnyEvent::Filesys::Watcher::Event>
+events because they contain enough information.
+
+=item B<directory_writes BOOLEAN>
+
+Directories are also files that basically store the list of files inside that
+directory.  Therefore, if you create or delete a file, the directory
+containing the file changes.  However, only the
+L<AnyEvent::Filesys::Watcher::ReadDirectoryChanges> backend can generate such
+modification events.  For the sake of compatibilty with the other backend, 
+these modification events are filter out by default.  If you pass a truthy
+option, these events are included.
+
+The default for this optional parameter is false.
 
 =back
 
@@ -142,4 +138,4 @@ Guido Flohr E<lt>guido.flohr@cantanea.comE<gt>.
 
 =head1 SEE ALSO
 
-L<AnyEvent::Filesys::Watcher>, L<Mac::FSEvents>, perl(1)
+L<Filesys::Notify::Win32::ReadDirectoryChanges>, L<AnyEvent::Filesys::Watcher>, perl(1)

@@ -1,7 +1,7 @@
-use Test::More tests => 2;
-
 use strict;
 use warnings;
+
+use Test::More tests => 2;
 
 use AnyEvent::Filesys::Watcher::Event;
 
@@ -11,5 +11,5 @@ my $e = AnyEvent::Filesys::Watcher::Event->new(
 	is_directory => undef,
 );
 
-isa_ok($e, "AnyEvent::Filesys::Watcher::Event" );
-ok(!$e->isDirectory, 'isDirectory');
+isa_ok $e, "AnyEvent::Filesys::Watcher::Event";
+ok !$e->isDirectory, 'isDirectory';

@@ -24,7 +24,7 @@ sub new {
 	for my $fs_monitor (@fs_monitors) {
 		my $w = AE::io $fs_monitor->watch, 0, sub {
 			if (my @events = $fs_monitor->read_events) {
-				$alter_ego->_processEvents(@events);
+				$alter_ego->_processEvents(@events) if @events;
 			}
 		};
 		push @watchers, $w;

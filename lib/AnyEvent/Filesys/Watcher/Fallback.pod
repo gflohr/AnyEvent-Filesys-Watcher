@@ -66,7 +66,7 @@ This argument is required if the argument B<callback> has not been given.
 
 Specifies the time in fractional seconds between file system checks.
 
-Optional. The default is 2.0.
+Optional. The default is 1.0.
 
 =item B<filter FILTER>
 

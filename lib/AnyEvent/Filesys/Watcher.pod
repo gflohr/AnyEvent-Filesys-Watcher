@@ -82,7 +82,7 @@ L<AnyEvent::Filesys::Watcher::FSEvents> implementation.
 
 Ignored for the L<AnyEvent::Filesys::Watcher::Inotify2> implementation.
 
-Optional. The default is 2.0.
+Optional. The default is 1.0.
 
 =item B<filter FILTER>
 
@@ -110,8 +110,8 @@ L<AnyEvent::Filesys::Watcher::Fallback>.
 
 =item B<parse_events BOOLEAN>
 
-In backends that support it (currently INotify2), parse the events
-instead of rescanning file system for changed "stat()" information.
+In backends that support it (currently INotify2 and ReadDirectoryChanges), parse the events
+instead of rescanning the file system for changed "stat()" information.
 Note, that this might cause slight changes in behavior. In
 particular, the Inotify2 backend will generate an additional
 'modified' event when a file changes (once when opened for write,
@@ -122,6 +122,17 @@ and once when modified).
 Skips subdirectories and anything in them while building a list of
 files/dirs to watch. Optional.
 
+=item B<directory_writes BOOLEAN>
+
+Directories are also files that basically store the list of files inside that
+directory.  Therefore, if you create or delete a file, the directory
+containing the file changes.  However, only the
+L<AnyEvent::Filesys::Watcher::ReadDirectoryChanges> backend can generate such
+modification events.  For the sake of compatibilty with the other backends,
+these modification events are filter out by default.  If you pass a truthy
+option, these events are included.
+
+The default for this optional parameter is false.
 
 =back
 
@@ -193,9 +204,28 @@ This would also work for Mac OS but you have little reason to prefer
 L<IO::KQueue> over L<Mac::FSEvents> unless you are a developer or just
 curious.
 
+=head1 USAGE RECOMMENDATIONS
+
+Different platforms have different notions about file system changes and how
+to report them.  This module tries to remove these differences and always
+report the same events for a certain file type change.  The test suite
+test this behaviour but still you should not rely on it.
+
+A robust implementation using this module should follow two rules:
+
+=over 4
+
+=item Do not expect events to come in a certain order.
+
+=item Treat the events "modified" and "created" equally "existing file has changed"
+
+=back
+
 =head1 DIFFERENCES TO AnyEvent::Filesys::Notify
 
 =over 4
+
+=item If you specify a subroutine as a filter, that subroutine receives events as arguments, not paths.
 
 =item The constructor argument "no_external" is ignored.
 

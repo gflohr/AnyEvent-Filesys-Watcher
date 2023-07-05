@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+
 use Test::More;
 use File::Find;
 
@@ -9,6 +10,8 @@ BEGIN {
 		$module = 'Linux/Inotify2.pm';
 	} elsif ($^O eq 'darwin') {
 		$module = 'Mac/FSEvents.pm';
+	} elsif ('MSWin32' eq $^O || 'cygwin' eq $^O) {
+		$module = 'Filesys/Notify/Win32/ReadDirectoryChanges.pm'
 	} elsif ($^O =~ /bsd/i) {
 		$module = 'IO/KQueue.pm';
 	}
@@ -30,6 +33,7 @@ BEGIN {
 
 				return if m{Inotify2$} and $^O ne 'linux';
 				return if m{FSEvents$} and $^O ne 'darwin';
+				return if m{ReadDirectoryChanges$} and $^O ne 'MSWin32' && $^O ne 'cygwin';
 				return if m{KQueue$} and $^O !~ /bsd/;
 
 				Test::More::use_ok($_)
@@ -39,5 +43,5 @@ BEGIN {
 		},
 		'lib'
 	);
-	done_testing();
+	done_testing;
 }

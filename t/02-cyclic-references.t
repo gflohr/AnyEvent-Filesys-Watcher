@@ -18,7 +18,7 @@ use AnyEvent::Filesys::Watcher;
 $SIG{__WARN__} = sub {
 	my ($msg) = @_;
 
-	if ($msg !~ m{^Unhandled type: (?:GLOB|REGEXP) at /.*/Devel/Cycle.pm line [0-9]+}) {
+	if ($msg !~ m{^Unhandled type: (?:GLOB|REGEXP|OBJECT) at /.*/Devel/Cycle.pm line [0-9]+}) {
 		print STDERR $msg;
 	}
 };
@@ -48,6 +48,15 @@ if ('darwin' eq $^O && eval { require Mac::FSEvents }) {
 		backend => 'FSEvents',
 	);
 	memory_cycle_ok $instance, 'FSEvents';
+}
+
+if (('MSWin32' eq $^O || 'cygwin' eq $^O) && eval { require Mac::FSEvents }) {
+	$instance = AnyEvent::Filesys::Watcher->new(
+		directories => 't',
+		callback => sub {},
+		backend => 'ReadDirectoryChanges',
+	);
+	memory_cycle_ok $instance, 'ReadDirectoryChanges';
 }
 
 if (($^O =~ /bsd/i || 'darwin' eq $^O) && eval { require IO::KQueue }) {

@@ -10,7 +10,8 @@ use strict;
 use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
 use Scalar::Util qw(reftype);
 use Path::Iterator::Rule;
-use Cwd qw(abs_path);
+use File::Spec;
+use Cwd;
 
 use AnyEvent::Filesys::Watcher::Event;
 
@@ -34,6 +35,10 @@ sub new {
 		$args{callback} = delete $args{cb};
 	}
 
+	if (!exists $args{base_dir}) {
+		$args{base_dir} = Cwd::cwd();
+	}
+
 	if ($backend_class) {
 		# Use the AEFW:: prefix unless the backend starts with a plus.
 		unless ($backend_class =~ s/^\+//) {
@@ -44,6 +49,8 @@ sub new {
 		$backend_class = 'AnyEvent::Filesys::Watcher::Inotify2';
 	} elsif ($^O eq 'darwin') {
 		$backend_class = "AnyEvent::Filesys::Watcher::FSEvents";
+	} elsif ($^O eq 'MSWin32') {
+		$backend_class = "AnyEvent::Filesys::Watcher::ReadDirectoryChanges";
 	} elsif ($^O =~ /bsd/) {
 		$backend_class = "AnyEvent::Filesys::Watcher::KQueue";
 	} else {
@@ -100,7 +107,7 @@ sub _new {
 		}
 	}
 
-	$args{interval} = 2 if !exists $args{interval};
+	$args{interval} = 1 if !exists $args{interval};
 	$args{directories} = [$args{directories}]
 		if !ref $args{directories};
 	if (exists $args{filter}
@@ -180,12 +187,25 @@ sub _scanFilesystem {
 		&& $self->skipSubdirectories;
 	my $next = $rule->iter(@paths);
 	while (my $file = $next->()) {
-		my $stat = $self->__stat($file)
+		my $path = $self->_makeAbsolute($file);
+		my %stat = $self->_stat($path)
 			or next; # Skip files that we cannot stat.
-		$fs_stats->{ abs_path($file) } = $stat;
+		$fs_stats->{$path} = \%stat;
 	}
 
 	return $fs_stats;
+}
+
+sub _makeAbsolute {
+	my ($self, $path) = @_;
+
+	$path = File::Spec->rel2abs($path, $self->{__base_dir});
+	if ('MSWin32' eq $^O || 'cygwin' eq $^O || 'os2' eq $^O || 'dos' eq $^O) {
+		# This is what Cwd does.
+		$path =~ s{\\}{/}g;
+	}
+
+	return $path;
 }
 
 # Taken from AnyEvent::Filesys::Notify.
@@ -255,13 +275,13 @@ sub _processEvents {
 	if ($self->parseEvents and $self->can('_parseEvents') ) {
 		@events =
 			$self->_parseEvents(
-				sub { $self->__applyFilter(@_) },
+				sub { $self->_applyFilter(@_) },
 				@raw_events
 			);
 	} else {
 		my $new_fs = $self->_scanFilesystem($self->directories);
 
-		@events = $self->__applyFilter(
+		@events = $self->_applyFilter(
 	 		$self->_diffFilesystem($self->_oldFilesystem, $new_fs));
 		$self->_oldFilesystem($new_fs);
 
@@ -278,11 +298,11 @@ sub _processEvents {
 # created. Give them a chance to do that here.
 sub _postProcessEvents {}
 
-sub __applyFilter {
+sub _applyFilter {
 	my ($self, @events) = @_;
 
-	my $cb = $self->filter;
-	return grep { $cb->( $_->path ) } @events;
+	my $callback = $self->filter;
+	return grep { $callback->($_) } @events;
 }
 
 sub _oldFilesystem {
@@ -295,6 +315,10 @@ sub _oldFilesystem {
 	return $self->{__old_filesystem};
 }
 
+sub _directoryWrites {
+	shift->{__directory_writes};
+}
+
 sub __compileFilter {
 	my ($self, $filter) = @_;
 
@@ -305,7 +329,12 @@ sub __compileFilter {
 	my $reftype = reftype $filter;
 	if ('REGEXP' eq $reftype) {
 		my $regexp = $filter;
-		$filter = sub { shift =~ $regexp };
+		$filter = sub {
+			my $event = shift;
+			my $path = $event->path;
+			my $result = $path =~ $regexp;
+			return $result;
+		};
 	} elsif ($reftype ne 'CODE') {
 		require Carp;
 		Carp::confess(__("The filter must either be a regular expression or"
@@ -316,8 +345,8 @@ sub __compileFilter {
 }
 
 # Originally taken from Filesys::Notify::Simple --Thanks Miyagawa
-sub __stat {
-	my ($self, $path ) = @_;
+sub _stat {
+	my ($self, $path) = @_;
 
 	my @stat = stat $path;
 
@@ -325,13 +354,13 @@ sub __stat {
 	# symlinks (at least under ext4).
 	return unless @stat;
 
-	return {
+	return (
 		path => $path,
 		mtime => $stat[9],
 		size => $stat[7],
 		mode => $stat[2],
 		is_directory => -d _,
-	};
+	);
 }
 
 # Taken from AnyEvent::Filesys::Notify.

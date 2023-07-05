@@ -1,33 +1,33 @@
-use Test::More;
-
 # GitHub issue #2.
 
 use strict;
 use warnings;
-use File::Spec;
-use lib 't/lib';
-$|++;
 
-use TestSupport qw(create_test_files $dir received_events receive_event);
+use Test::More;
+use File::Spec;
 
 use AnyEvent::Filesys::Watcher;
-use AnyEvent::Impl::Perl;
+use lib 't/lib';
+use TestSupport qw(create_test_files $dir received_events receive_event
+	catch_trailing_events EXISTS DELETED);
 
-create_test_files(qw(one/1));
-## ls: one/1 
+$|++;
+
+create_test_files qw(one/1);
+## ls: one/1
 
 my $n = AnyEvent::Filesys::Watcher->new(
 	directories => File::Spec->catfile($dir, 'one'),
 	callback => sub { receive_event(@_) },
-	parse_events => 1,
 );
-isa_ok($n, 'AnyEvent::Filesys::Watcher');
+isa_ok $n, 'AnyEvent::Filesys::Watcher';
 
 diag "This might take a few seconds to run...";
 
 received_events(sub { create_test_files(qw(one/2)) },
-	'create file', qw(created));
+	'create file',
+	'one/2' => EXISTS,
+);
 
-ok(1, '... arrived');
-
+catch_trailing_events;
 done_testing;

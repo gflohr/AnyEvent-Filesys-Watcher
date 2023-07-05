@@ -1,15 +1,20 @@
-use Test::More;
-use Test::Exception;
 use strict;
 use warnings;
 
+use Test::More;
+use Test::Exception;
+use Test::Without::Module qw(
+	Linux::Inotify2
+	Mac::FSEvents
+	Filesys::Notify::Win32::ReadDirectoryChanges
+	IO::KQueue
+);
+
 use AnyEvent::Filesys::Watcher;
 
-use Test::Without::Module qw(Linux::Inotify2 Mac::FSEvents IO::KQueue);
-
 if ($^O ne 'linux' && $^O ne 'darwin'
-    && $^O !~ /bsd/i) {
-    plan skip_all => 'only for Linux, Mac OS, and BSD';
+    && $^O ne 'MSWin32' && $^O !~ /bsd/i) {
+    plan skip_all => 'only for Linux, Mac OS, MS-DOS, and BSD';
 }
 
 my $w = AnyEvent::Filesys::Watcher->new(
