@@ -2,13 +2,15 @@ use strict;
 use warnings;
 
 use Test::More;
+use Test::Without::Module qw(Filesys::Notify::Win32::ReadDirectoryChanges);
 use File::Spec;
 
 use AnyEvent::Filesys::Watcher;
 use lib 't/lib';
 use TestSupport qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event
-	catch_trailing_events next_testing_done_file EXISTS DELETED);
+	catch_trailing_events next_testing_done_file EXISTS DELETED
+	$safe_directory_filter $ignoreme_filter);
 
 $|++;
 create_test_files qw(one/1);
@@ -18,7 +20,7 @@ create_test_files qw(one/sub/1);
 
 my $n = AnyEvent::Filesys::Watcher->new(
 	directories => [ map { File::Spec->catfile($dir, $_)} qw(one two) ],
-	filter => sub { shift->path !~ qr{/ignoreme$} },
+	filter => $safe_directory_filter,
 	callback => sub { receive_event(@_) },
 	parse_events => 1,
 );
@@ -57,10 +59,12 @@ received_events(sub { delete_test_files(qw(two/sub/2)) },
 );
 
 # ls: one/1 one/2 +one/ignoreme +one/3 one/sub/1 one/sub/2 two/1 two/sub
+$n->filter($ignoreme_filter);
 received_events(sub { create_test_files(qw(one/ignoreme one/3)) },
 	'creates two files one should be ignored',
 	'one/3' => EXISTS,
 );
+$n->filter($safe_directory_filter);
 
 # ls: one/1 one/2 one/ignoreme -one/3 +one/5 one/sub/1 one/sub/2 two/1 two/sub
 received_events(sub { move_test_files('one/3' => 'one/5')},
@@ -75,6 +79,7 @@ SKIP: {
 	# ls: one/1 one/2 one/ignoreme one/5 one/sub/1 one/sub/2 ~two/1 ~two/sub
 	# Inotify2 generates an extra modified event when attributes changed but
 	# one of them should be filtered away.
+	$n->filter($ignoreme_filter);
 	received_events(
 		sub { modify_attrs_on_test_files(qw(two/1 two/sub)) },
 		'modify attributes',

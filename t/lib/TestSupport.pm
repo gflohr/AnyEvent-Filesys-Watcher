@@ -19,7 +19,8 @@ use Exporter qw(import);
 our @EXPORT = qw(EXISTS DELETED);
 our @EXPORT_OK = qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event
-	catch_trailing_events next_testing_done_file EXISTS DELETED);
+	catch_trailing_events next_testing_done_file EXISTS DELETED
+	$safe_directory_filter $ignoreme_filter);
 
 sub create_test_files;
 sub delete_test_files;
@@ -32,6 +33,28 @@ sub receive_event;
 # Cwd::realpath in order to be able to compare paths.
 our $dir = Cwd::realpath(tempdir CLEANUP => 1);
 my $size = 1;
+
+# The MS-DOS implementation generates modified events for directories, if
+# the directory contents changes.  Although technically correct, this
+# is not done by the other backends.  This filter therefore filters out
+# modified events for directories.
+our $safe_directory_filter = sub {
+	my ($event) = @_;
+
+	return if $event->isDirectory && 'modified' eq $event->type;
+
+	return 1;
+};
+
+our $ignoreme_filter = sub {
+	my ($event) = @_;
+	
+	return if $event->isDirectory && 'modified' eq $event->type;
+	return if $event->path =~ m{/ignoreme/};
+	return if $event->path =~ m{/ignoreme$};
+
+	return 1;
+};
 
 # For the (preliminary) MS-DOS implementation we had to significantly increase
 # the waiting timeout at the end of the tests.  Therefore, receive_events()

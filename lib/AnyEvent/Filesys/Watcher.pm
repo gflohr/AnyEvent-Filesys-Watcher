@@ -10,7 +10,8 @@ use strict;
 use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
 use Scalar::Util qw(reftype);
 use Path::Iterator::Rule;
-use Cwd qw(abs_path);
+use File::Spec;
+use Cwd;
 
 use AnyEvent::Filesys::Watcher::Event;
 
@@ -32,6 +33,10 @@ sub new {
 
 	if (exists $args{cb} && !exists $args{callback}) {
 		$args{callback} = delete $args{cb};
+	}
+
+	if (!exists $args{base_dir}) {
+		$args{base_dir} = Cwd::cwd();
 	}
 
 	if ($backend_class) {
@@ -182,12 +187,25 @@ sub _scanFilesystem {
 		&& $self->skipSubdirectories;
 	my $next = $rule->iter(@paths);
 	while (my $file = $next->()) {
-		my %stat = $self->_stat($file)
+		my $path = $self->_makeAbsolute($file);
+		my %stat = $self->_stat($path)
 			or next; # Skip files that we cannot stat.
-		$fs_stats->{ abs_path $file } = \%stat;
+		$fs_stats->{$path} = \%stat;
 	}
 
 	return $fs_stats;
+}
+
+sub _makeAbsolute {
+	my ($self, $path) = @_;
+
+	$path = File::Spec->rel2abs($path, $self->{__base_dir});
+	if ('MSWin32' eq $^O || 'cygwin' eq $^O || 'os2' eq $^O || 'dos' eq $^O) {
+		# This is what Cwd does.
+		$path =~ s{\\}{/}g;
+	}
+
+	return $path;
 }
 
 # Taken from AnyEvent::Filesys::Notify.
@@ -328,7 +346,7 @@ sub __compileFilter {
 
 # Originally taken from Filesys::Notify::Simple --Thanks Miyagawa
 sub _stat {
-	my ($self, $path ) = @_;
+	my ($self, $path) = @_;
 
 	my @stat = stat $path;
 

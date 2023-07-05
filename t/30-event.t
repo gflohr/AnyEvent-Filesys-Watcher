@@ -28,7 +28,8 @@ $|++;
 use AnyEvent::Filesys::Watcher;
 use TestSupport qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event
-	catch_trailing_events next_testing_done_file EXISTS DELETED);
+	catch_trailing_events next_testing_done_file EXISTS DELETED
+	$safe_directory_filter $ignoreme_filter);
 
 create_test_files qw(one/1);
 create_test_files qw(two/1);
@@ -37,7 +38,7 @@ create_test_files qw(one/sub/1);
 
 my $n = AnyEvent::Filesys::Watcher->new(
 	directories => [ map { File::Spec->catfile($dir, $_ ) } qw(one two) ],
-	filter => sub { shift->path !~ m{/ignoreme$} },
+	filter => $ignoreme_filter,
 	callback => sub { receive_event(@_) },
 );
 
@@ -66,6 +67,7 @@ SKIP: {
 diag "This might take a few seconds to run...";
 
 # ls: one/1 one/sub/1 +one/sub/2 two/1
+$n->filter($safe_directory_filter);
 received_events(
 	sub { create_test_files(qw(one/sub/2)) },
 	'create a filex',
@@ -80,6 +82,7 @@ received_events(
 	'two/sub' => EXISTS,
 	'two/sub/2' => EXISTS,
 );
+$n->filter($ignoreme_filter);
 
 # ls: one/1 ~one/2 one/sub/1 one/sub/2 two/1 two/sub/2
 received_events(

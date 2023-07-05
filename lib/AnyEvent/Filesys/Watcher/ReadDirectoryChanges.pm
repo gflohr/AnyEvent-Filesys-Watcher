@@ -89,9 +89,7 @@ sub _transformEvents {
 					action => $action, path => $path);
 		}
 
-		if (!File::Spec->file_name_is_absolute($path)) {
-			$path = File::Spec->rel2abs($path, $self->{__base_directory});
-		}
+		$path = $self->_makeAbsolute($path);
 
 		push @events, AnyEvent::Filesys::Watcher::Event->new(
 			path => $path,
@@ -100,62 +98,7 @@ sub _transformEvents {
 		);
 	}
 
-	@events = $self->__cookEvents(@events);
-
 	return $self->_applyFilter(@events);
-}
-
-sub __cookEvents {
-	my ($self, @raw_events) = @_;
-
-	my %events;
-	my @events;
-	my $old_fs = $self->_oldFilesystem;
-	RAW_EVENT: for my $i (0 .. $#raw_events) {
-		my $event = $raw_events[$i];
-		my $type = $event->type;
-		my $path = $event->path;
-
-		if ('modified' eq $type) {
-			if ($event->isDirectory) {
-				# Only MS-DOS reports changes to the directories, when the
-				# contents of the directory changes.  This is technically
-				# correct but all other backends do not report this event.
-				next;
-			} elsif ($events{$path}
-			         && ('created' eq $events{$path}->type
-			             || 'modified' eq $events{$path}->type)) {
-				# If a file was created, a 'created' and a 'modified' event
-				# are generated.  The second event should be discarded.
-				#
-				# The same sometimes happens, when a file is modified.
-				next;
-			}
-		} elsif ('deleted' eq $type) {
-			# If a file is renamed to an existing file, then a 'delete', and
-			# then a 'create' event is triggered.  In this case, we want to
-			# ignore the gratuituous 'delete' event, and change the 'created'
-			# to 'modified'.
-			foreach my $j ($i + 1 .. $#raw_events) {
-				my $other = $raw_events[$j];
-				if ('created' eq $other->type
-					&& $path eq $other->type
-					&& !!$event->isDirectory == !!$other->isDirectory) {
-					$raw_events[$j] = AnyEvent::Filesys::Watcher::Event->new(
-						path => $path,
-						type => 'modified',
-						is_directory => $event->isDirectory,
-					);
-					next RAW_EVENT;
-				}
-			}
-		}
-
-		push @events, $event;
-		$events{$path} = $event;
-	}
-
-	return @events;
 }
 
 1;
