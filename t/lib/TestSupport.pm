@@ -41,15 +41,18 @@ my $size = 1;
 our $safe_directory_filter = sub {
 	my ($event) = @_;
 
-	return if $event->isDirectory && 'modified' eq $event->type;
+	if ('MSWin32' eq $^O || 'cygwin' eq $^O) {
+		return if $event->isDirectory && 'modified' eq $event->type;
+	}
 
 	return 1;
 };
 
 our $ignoreme_filter = sub {
 	my ($event) = @_;
-	
-	return if $event->isDirectory && 'modified' eq $event->type;
+
+	$safe_directory_filter->($event) or return;
+
 	return if $event->path =~ m{/ignoreme/};
 	return if $event->path =~ m{/ignoreme$};
 
