@@ -8,7 +8,66 @@ use strict;
 
 use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
 use Thread::Queue 3.13;
+use IO::Handle;
+use IO::Select;
 
-use base qw(Thread::Queue);
+sub new {
+	my ($class, @args) = @_;
+
+	my $q = Thread::Queue->new(@args);
+
+	my ($rh, $wh);
+	pipe my $rh, my $wh or die __x("cannot create pipe: {error}", error => $!);
+	$rh = IO::Handle->new_from_fd($rh, 'r');
+	$wh = IO::Handle->new_from_fd($wh, 'w');
+	$rh->autoflush(1);
+	$wh->autoflush(1);
+
+	if ($q->pending) {
+		$wh->print('1')
+			or die __x("cannot write to pipe: {error}", error => $!);
+	}
+
+	bless {
+		__q => $q,
+		__rh => $rh,
+		__wh => $wh,
+	}, $class;
+}
+
+sub handle {
+	shift->{__rh};
+}
+
+sub enqueue {
+	my ($self, @items) = @_;
+
+	$self->{__q}->enqueue(@items);
+	if ($self->{__q}->pending) {
+		$self->{__wh}->print('1')
+			or die __x("cannot write to pipe: {error}", error => $!);
+	}
+
+	return $self;
+}
+
+sub dequeue {
+	my ($self, @args) = @_;
+
+	my @items = $self->{__q}->dequeue(@args);
+	if (!$self->{__q}->pending) {
+		# Maybe it is better to set the handle to non-blocking instead of doing
+		# a select()? Whatever is more portable.
+		while (IO::Select->new($self->{__rh})->can_read(0)) {
+			$self->{__rh}->getc;
+		}
+	}
+
+	return @items;
+}
+
+sub pending {
+	shift->{__q}->pending;
+}
 
 1;

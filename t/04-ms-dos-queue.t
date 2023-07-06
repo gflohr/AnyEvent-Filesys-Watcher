@@ -12,6 +12,10 @@ my $q = AnyEvent::Filesys::Watcher::ReadDirectoryChanges::Queue->new;
 ok $q, 'instantiated';
 isa_ok $q, 'AnyEvent::Filesys::Watcher::ReadDirectoryChanges::Queue';
 
+my $handle = $q->handle;
+ok $handle, 'handle';
+isa_ok $handle, 'IO::Handle';
+
 $q->enqueue('foo', 'bar');
 
 is $q->pending, 2, '2 items pending';
