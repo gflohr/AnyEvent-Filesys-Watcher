@@ -34,26 +34,19 @@ sub new {
 	}
 
 	my $alter_ego = $self;
-	my $timer = AnyEvent->timer(
-		after => $self->interval,
-		interval => $self->interval,
-		cb => sub {
-			my $pending = $watcher->queue->pending;
-			if ($pending) {
-				my @raw_events = $watcher->queue->dequeue($pending);
+	my $watcher = AE::io $queue->handle, 0, sub {
+		my $pending = $watcher->queue->pending;
+		if ($pending) {
+			my @raw_events = $watcher->queue->dequeue($pending);
 
-				$alter_ego->_processEvents(
-					@raw_events
-				);
-			}
+			$alter_ego->_processEvents(
+				@raw_events
+			);
 		}
-	);
+	};
 	weaken $alter_ego;
-	if (!$timer) {
-		die __x("Error creating timer: {error}\n", error => $@);
-	}
 
-	$self->_watcher($timer);
+	$self->_watcher($watcher);
 
 	return $self;
 }
