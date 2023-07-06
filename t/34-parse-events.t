@@ -2,7 +2,6 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Without::Module qw(Filesys::Notify::Win32::ReadDirectoryChanges);
 use File::Spec;
 
 use AnyEvent::Filesys::Watcher;

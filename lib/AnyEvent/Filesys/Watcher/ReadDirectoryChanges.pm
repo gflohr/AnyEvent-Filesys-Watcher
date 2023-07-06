@@ -35,8 +35,9 @@ sub new {
 		after => $self->interval,
 		interval => $self->interval,
 		cb => sub {
-			if ($watcher->queue->pending) {
-				my @raw_events = $watcher->queue->dequeue;
+			my $pending = $watcher->queue->pending;
+			if ($pending) {
+				my @raw_events = $watcher->queue->dequeue($pending);
 				my @events = $alter_ego->_transformEvents(@raw_events);
 
 				# Somethimes, there is a lone "renamed" event which gets
