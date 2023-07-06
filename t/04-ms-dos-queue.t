@@ -8,4 +8,17 @@ use Test::More;
 use_ok 'AnyEvent::Filesys::Watcher';
 use_ok 'AnyEvent::Filesys::Watcher::ReadDirectoryChanges::Queue';
 
+my $q = AnyEvent::Filesys::Watcher::ReadDirectoryChanges::Queue->new;
+ok $q, 'instantiated';
+isa_ok $q, 'AnyEvent::Filesys::Watcher::ReadDirectoryChanges::Queue';
+
+$q->enqueue('foo', 'bar');
+
+is $q->pending, 2, '2 items pending';
+
+my @items = $q->dequeue(2);
+is $items[0], 'foo', 'dequeued foo';
+is $items[1], 'bar', 'dequeued bar';
+is $q->pending, 0, '0 items pending';
+
 done_testing;
