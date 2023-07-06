@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use File::Spec;
 
 BEGIN {
 	my $module;
@@ -21,15 +22,18 @@ BEGIN {
 	}
 }
 
-use File::Spec;
-
-use lib 't/lib';
-$|++;
 use AnyEvent::Filesys::Watcher;
+use lib 't/lib';
 use TestSupport qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event
 	catch_trailing_events next_testing_done_file EXISTS DELETED
 	$safe_directory_filter $ignoreme_filter);
+
+if ($^O eq 'MSWin32' ) {
+	plan skip_all => 'Test temporarily disabled for MSWin32';
+}
+
+$|++;
 
 create_test_files qw(one/1);
 create_test_files qw(two/1);

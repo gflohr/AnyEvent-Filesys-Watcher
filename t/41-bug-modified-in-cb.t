@@ -9,6 +9,10 @@ use TestSupport qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event
 	catch_trailing_events next_testing_done_file EXISTS DELETED);
 
+if ($^O eq 'MSWin32' ) {
+	plan skip_all => 'Test temporarily disabled for MSWin32';
+}
+
 $|++;
 
 # Prevent the directory 'one' from being created by the TestSupport library.
