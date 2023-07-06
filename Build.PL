@@ -80,7 +80,7 @@ unless ( eval { Module::Build->VERSION(0.4004) } ) {
 }
 
 if ( $^O eq 'linux' ) {
-	$module_build_args{requires}{'Linux::Inotify'} = '1.22';
+	$module_build_args{requires}{'Linux::Inotify2'} = '1.22';
 }
 
 if ( $^O eq 'darwin' ) {
