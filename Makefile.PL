@@ -24,27 +24,28 @@ my %WriteMakefileArgs = (
     "AnyEvent" => 0,
     "Carp" => 0,
     "Cwd" => 0,
+    "File::Spec" => 0,
     "Locale::TextDomain" => 0,
     "Path::Iterator::Rule" => 0,
     "Scalar::Util" => 0,
+    "Thread::Queue" => 0,
     "base" => 0,
     "strict" => 0
   },
   "TEST_REQUIRES" => {
-    "AnyEvent::Impl::Perl" => 0,
     "Data::Dump" => 0,
     "Exporter" => 0,
     "File::Basename" => 0,
     "File::Copy" => 0,
     "File::Find" => 0,
     "File::Path" => 0,
-    "File::Spec" => 0,
     "File::Temp" => 0,
     "Test::Exception" => "0.43",
     "Test::Memory::Cycle" => 0,
     "Test::More" => 0,
     "Test::Without::Module" => "0.21",
     "autodie" => 0,
+    "constant" => 0,
     "lib" => 0,
     "warnings" => 0
   },
@@ -57,7 +58,6 @@ my %WriteMakefileArgs = (
 
 my %FallbackPrereqs = (
   "AnyEvent" => 0,
-  "AnyEvent::Impl::Perl" => 0,
   "Carp" => 0,
   "Cwd" => 0,
   "Data::Dump" => 0,
@@ -76,8 +76,10 @@ my %FallbackPrereqs = (
   "Test::Memory::Cycle" => 0,
   "Test::More" => 0,
   "Test::Without::Module" => "0.21",
+  "Thread::Queue" => 0,
   "autodie" => 0,
   "base" => 0,
+  "constant" => 0,
   "lib" => 0,
   "strict" => 0,
   "warnings" => 0
@@ -106,6 +108,11 @@ if ( $^O eq 'darwin' ) {
 if ( $^O =~ /bsd/i ) {
 	$WriteMakefileArgs{PREREQ_PM}{'BSD::Resource'} = $FallbackPrereqs{'BSD::Resource'} = '1.2911';
 	$WriteMakefileArgs{PREREQ_PM}{'IO::KQueue'} = $FallbackPrereqs{'IO::KQueue'} = '0.34';
+}
+
+if ( $^O eq 'MSWin32' ) {
+	$WriteMakefileArgs{PREREQ_PM}{'Filesys::Notify::Win32::ReadDirectoryChanges'} = $FallbackPrereqs{'Filesys::Notify::Win32::ReadDirectoryChanges'} = '0.04';
+	$WriteMakefileArgs{PREREQ_PM}{'Thread::Queue'} = $FallbackPrereqs{'Thread::Queue'} = '3.13';
 }
 
 WriteMakefile(%WriteMakefileArgs);

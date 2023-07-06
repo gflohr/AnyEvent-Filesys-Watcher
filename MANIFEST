@@ -21,6 +21,9 @@ lib/AnyEvent/Filesys/Watcher/Inotify2.pm
 lib/AnyEvent/Filesys/Watcher/Inotify2.pod
 lib/AnyEvent/Filesys/Watcher/KQueue.pm
 lib/AnyEvent/Filesys/Watcher/KQueue.pod
+lib/AnyEvent/Filesys/Watcher/ReadDirectoryChanges.pm
+lib/AnyEvent/Filesys/Watcher/ReadDirectoryChanges.pod
+lib/AnyEvent/Filesys/Watcher/ReadDirectoryChanges/Queue.pm
 lib/LocaleData/de/LC_MESSAGES/AnyEvent-Filesys-Watch.mo
 po/AnyEvent-Filesys-Watcher.pot
 po/Makefile
@@ -30,6 +33,8 @@ po/de.po
 t/00-base.t
 t/01-load.t
 t/02-cyclic-references.t
+t/03-alias-callback.t
+t/04-ms-dos-queue.t
 t/10-plugins.t
 t/11-plugin-default.t
 t/12-direct-invocation.t
@@ -39,10 +44,9 @@ t/21-scanFilesystemLinks.t
 t/30-event.t
 t/31-notify-fallback.t
 t/33-specify-kqueue.t
-t/34-parse_events.t
-t/35-skip_subdirs.t
+t/34-parse-events.t
+t/35-skip-subdirs.t
 t/40-bugs.t
-t/41-bug-modified-in-cb.t
 t/42-inotify-race.t
 t/43-single-directory.t
 t/author-critic.t

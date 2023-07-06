@@ -27,28 +27,29 @@ my %module_build_args = (
     "AnyEvent" => 0,
     "Carp" => 0,
     "Cwd" => 0,
+    "File::Spec" => 0,
     "Locale::TextDomain" => 0,
     "Path::Iterator::Rule" => 0,
     "Scalar::Util" => 0,
+    "Thread::Queue" => 0,
     "base" => 0,
     "perl" => "5.008",
     "strict" => 0
   },
   "test_requires" => {
-    "AnyEvent::Impl::Perl" => 0,
     "Data::Dump" => 0,
     "Exporter" => 0,
     "File::Basename" => 0,
     "File::Copy" => 0,
     "File::Find" => 0,
     "File::Path" => 0,
-    "File::Spec" => 0,
     "File::Temp" => 0,
     "Test::Exception" => "0.43",
     "Test::Memory::Cycle" => 0,
     "Test::More" => 0,
     "Test::Without::Module" => "0.21",
     "autodie" => 0,
+    "constant" => 0,
     "lib" => 0,
     "warnings" => 0
   }
@@ -56,14 +57,12 @@ my %module_build_args = (
 
 
 my %fallback_build_requires = (
-  "AnyEvent::Impl::Perl" => 0,
   "Data::Dump" => 0,
   "Exporter" => 0,
   "File::Basename" => 0,
   "File::Copy" => 0,
   "File::Find" => 0,
   "File::Path" => 0,
-  "File::Spec" => 0,
   "File::Temp" => 0,
   "Module::Build" => "0.28",
   "Test::Exception" => "0.43",
@@ -71,6 +70,7 @@ my %fallback_build_requires = (
   "Test::More" => 0,
   "Test::Without::Module" => "0.21",
   "autodie" => 0,
+  "constant" => 0,
   "lib" => 0,
   "warnings" => 0
 );
