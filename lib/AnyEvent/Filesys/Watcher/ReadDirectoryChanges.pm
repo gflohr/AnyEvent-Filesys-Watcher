@@ -34,7 +34,7 @@ sub new {
 	}
 
 	my $alter_ego = $self;
-	my $watcher = AE::io $queue->handle, 0, sub {
+	my $io = AE::io $queue->handle, 0, sub {
 		my $pending = $watcher->queue->pending;
 		if ($pending) {
 			my @raw_events = $watcher->queue->dequeue($pending);
@@ -46,7 +46,7 @@ sub new {
 	};
 	weaken $alter_ego;
 
-	$self->_watcher($watcher);
+	$self->_watcher($io);
 
 	return $self;
 }
