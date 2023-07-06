@@ -10,6 +10,7 @@ use Scalar::Util qw(weaken);
 use File::Spec;
 use Cwd;
 use AnyEvent::Filesys::Watcher::Event;
+use AnyEvent::Filesys::Watcher::ReadDirectoryChanges::Queue;
 
 use base qw(AnyEvent::Filesys::Watcher);
 
@@ -18,8 +19,10 @@ sub new {
 
 	my $self = $class->SUPER::_new(%args);
 
-	$self->{__base_directory} = Cwd::cwd();
-	my $watcher = Filesys::Notify::Win32::ReadDirectoryChanges->new;
+	my $queue = AnyEvent::Filesys::Watcher::ReadDirectoryChanges::Queue->new;
+	my $watcher = Filesys::Notify::Win32::ReadDirectoryChanges->new(
+		queue => $queue,
+	);
 	foreach my $directory (@{$self->directories}) {
 		eval {
 			$watcher->watch_directory(path => $directory, subtree => 1);
@@ -31,42 +34,25 @@ sub new {
 	}
 
 	my $alter_ego = $self;
-	my $timer = AnyEvent->timer(
-		after => $self->interval,
-		interval => $self->interval,
-		cb => sub {
-			if ($watcher->queue->pending) {
-				my @raw_events = $watcher->queue->dequeue;
-				my @events = $alter_ego->_transformEvents(@raw_events);
+	my $watcher = AE::io $queue->handle, 0, sub {
+		my $pending = $watcher->queue->pending;
+		if ($pending) {
+			my @raw_events = $watcher->queue->dequeue($pending);
 
-				# Somethimes, there is a lone "renamed" event which gets
-				# ignored.
-				$alter_ego->_processEvents(
-					@events
-				) if @events;
-			}
+			$alter_ego->_processEvents(
+				@raw_events
+			);
 		}
-	);
+	};
 	weaken $alter_ego;
-	if (!$timer) {
-		die __x("Error creating timer: {error}\n", error => $@);
-	}
 
-	$self->_watcher($timer);
+	$self->_watcher($watcher);
 
 	return $self;
 }
 
 sub _parseEvents {
-	my ($self, $filter, @events) = @_;
-
-	# The events have already been cooked and filtered.
-
-	return @events;
-}
-
-sub _transformEvents {
-	my ($self, @all_events) = @_;
+	my ($self, $filter, @all_events) = @_;
 
 	my %events;
 	my @events;
@@ -91,14 +77,15 @@ sub _transformEvents {
 
 		$path = $self->_makeAbsolute($path);
 
-		push @events, AnyEvent::Filesys::Watcher::Event->new(
+		my $cooked = AnyEvent::Filesys::Watcher::Event->new(
 			path => $path,
 			type => $action,
 			is_directory => -d $path,
 		);
+		push @events, $cooked if $filter->($cooked);
 	}
 
-	return $self->_applyFilter(@events);
+	return @events;
 }
 
 1;

@@ -60,19 +60,8 @@ our $ignoreme_filter = sub {
 	return 1;
 };
 
-# For the (preliminary) MS-DOS implementation we had to significantly increase
-# the waiting timeout at the end of the tests.  Therefore, receive_events()
-# now signals that (probably) no more events will be coming by creating a
-# file.  If the callback gets a notification for this file it will immediately
-# send to the condition variable to stop the test.
-#
-# If more, unexpected, events would be coming in, the next test will fail.
-# Only the last test would be critical because for it, such trailing garbage
-# could not be detected.  If that garbage is coming in in reasonable time,
-# we will still detected it if catch_trailing_events() is called.  And other
-# cases are so unlikely that we will ignore them.
 our $test_count = 0;
-our $testing_done_format = 'one/testing-done-%u';
+our $testing_done_format = 'one/testing-done-%s';
 
 sub next_testing_done_file {
 	sprintf $testing_done_format, $test_count + 1;
@@ -132,7 +121,7 @@ our $description;
 sub receive_event {
 	my (@events) = @_;
 
-	my $testing_file = sprintf $testing_done_format, $test_count;
+	my $testing_file = sprintf $testing_done_format, '[1-9][0-9]*';
 	my $ready;
 	foreach my $event (@events) {
 		if ($event->path =~ m{/$testing_file$}) {
