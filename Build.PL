@@ -11,7 +11,6 @@ my %module_build_args = (
     "Module::Build" => "0.28"
   },
   "configure_requires" => {
-    "ExtUtils::MakeMaker" => 0,
     "Module::Build" => "0.28"
   },
   "dist_abstract" => "Watch file system for changes",
@@ -27,6 +26,7 @@ my %module_build_args = (
     "AnyEvent" => 0,
     "Carp" => 0,
     "Cwd" => 0,
+    "File::Spec" => 0,
     "Locale::TextDomain" => 0,
     "Path::Iterator::Rule" => 0,
     "Scalar::Util" => 0,
@@ -35,20 +35,19 @@ my %module_build_args = (
     "strict" => 0
   },
   "test_requires" => {
-    "AnyEvent::Impl::Perl" => 0,
     "Data::Dump" => 0,
     "Exporter" => 0,
     "File::Basename" => 0,
     "File::Copy" => 0,
     "File::Find" => 0,
     "File::Path" => 0,
-    "File::Spec" => 0,
     "File::Temp" => 0,
     "Test::Exception" => "0.43",
     "Test::Memory::Cycle" => 0,
     "Test::More" => 0,
     "Test::Without::Module" => "0.21",
     "autodie" => 0,
+    "constant" => 0,
     "lib" => 0,
     "warnings" => 0
   }
@@ -56,14 +55,12 @@ my %module_build_args = (
 
 
 my %fallback_build_requires = (
-  "AnyEvent::Impl::Perl" => 0,
   "Data::Dump" => 0,
   "Exporter" => 0,
   "File::Basename" => 0,
   "File::Copy" => 0,
   "File::Find" => 0,
   "File::Path" => 0,
-  "File::Spec" => 0,
   "File::Temp" => 0,
   "Module::Build" => "0.28",
   "Test::Exception" => "0.43",
@@ -71,6 +68,7 @@ my %fallback_build_requires = (
   "Test::More" => 0,
   "Test::Without::Module" => "0.21",
   "autodie" => 0,
+  "constant" => 0,
   "lib" => 0,
   "warnings" => 0
 );
@@ -79,6 +77,27 @@ my %fallback_build_requires = (
 unless ( eval { Module::Build->VERSION(0.4004) } ) {
   delete $module_build_args{test_requires};
   $module_build_args{build_requires} = \%fallback_build_requires;
+}
+
+if ( $^O eq 'linux' ) {
+	$module_build_args{requires}{'Linux::Inotify'} = '1.22';
+}
+
+if ( $^O eq 'darwin' ) {
+	$module_build_args{requires}{'Mac::FSEvents'} = '0.10';
+}
+
+if ( $^O =~ /bsd/i ) {
+	$module_build_args{requires}{'BSD::Resource'} = '1.2911';
+	$module_build_args{requires}{'IO::KQueue'} = '0.34';
+}
+
+if ( $^O eq 'MSWin32' ) {
+	$module_build_args{requires}{'Filesys::Notify::Win32::ReadDirectoryChanges'} = '0.04';
+}
+
+if ( $^O eq 'cygwin' ) {
+	$module_build_args{requires}{'Filesys::Notify::Win32::ReadDirectoryChanges'} = '0.04';
 }
 
 my $build = Module::Build->new(%module_build_args);

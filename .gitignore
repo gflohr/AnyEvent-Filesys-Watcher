@@ -32,11 +32,4 @@ inc/
 po/*.gmo
 
 # ExtUtils::MakeMaker
-/blib/
-/_eumm/
-/*.gz
-/Makefile
-/Makefile.old
-/MANIFEST.bak
-/pm_to_blib
-/*.zip
+/blib
