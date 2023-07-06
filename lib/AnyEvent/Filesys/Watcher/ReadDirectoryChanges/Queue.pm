@@ -8,6 +8,7 @@ use strict;
 
 use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
 use Thread::Queue 3.13;
+use Socket;
 use IO::Handle;
 use IO::Select;
 
@@ -16,8 +17,12 @@ sub new {
 
 	my $q = Thread::Queue->new(@args);
 
-	my ($rh, $wh);
-	pipe my $rh, my $wh or die __x("cannot create pipe: {error}", error => $!);
+	# You cannot do a select on an anonymous pipe on MS-DOS.  But sockets
+	# seem to work.
+	socketpair my $rh, my $wh, AF_UNIX, SOCK_STREAM, PF_UNSPEC
+		or die __x("cannot create pipe: {error}", error => $!);
+	shutdown $rh, 1;
+	shutdown $wh, 0;
 	$rh = IO::Handle->new_from_fd($rh, 'r');
 	$wh = IO::Handle->new_from_fd($wh, 'w');
 	$rh->autoflush(1);
