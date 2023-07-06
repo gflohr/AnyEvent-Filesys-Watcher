@@ -28,6 +28,7 @@ sub move_test_files;
 sub modify_attrs_on_test_files;
 sub received_events;
 sub receive_event;
+sub compare_ok;
 
 # On the Mac, TMPDIR is a symbolic link.  We have to resolve that with
 # Cwd::realpath in order to be able to compare paths.
@@ -126,6 +127,7 @@ sub modify_attrs_on_test_files {
 our @received;
 our %expected;
 our $cv;
+our $description;
 
 sub receive_event {
 	my (@events) = @_;
@@ -140,7 +142,12 @@ sub receive_event {
 		}
 	}
 
-	$cv->send if $ready;
+	if ($ready) {
+		compare_ok(\@received, \%expected, $description);
+		undef @received;
+
+		$cv->send;
+	}
 }
 
 sub catch_trailing_events {
@@ -169,8 +176,8 @@ sub catch_trailing_events {
 
 sub received_events {
 	my $setup = shift;
-	my $description = shift;
 
+	$description = shift;
 	%expected = @_;
 
 	foreach my $key (keys %expected) {
@@ -196,9 +203,6 @@ sub received_events {
 		});
 
 	$cv->recv;
-
-	compare_ok(\@received, \%expected, $description);
-	undef @received;
 }
 
 sub compare_ok {
