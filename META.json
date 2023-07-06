@@ -43,7 +43,7 @@
             "Locale::TextDomain" : "0",
             "Path::Iterator::Rule" : "0",
             "Scalar::Util" : "0",
-            "Thread::Queue" : "0",
+            "Thread::Queue" : "3.13",
             "base" : "0",
             "perl" : "5.008",
             "strict" : "0"
