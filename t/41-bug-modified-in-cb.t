@@ -12,7 +12,7 @@ use TestSupport qw(create_test_files delete_test_files move_test_files
 $|++;
 
 # Prevent the directory 'one' from being created by the TestSupport library.
-$TestSupport::testing_done_format = 'testing-done-%u';
+$TestSupport::testing_done_format = 'testing-done-%s';
 
 sub run_test {
 	my %extra_config = @_;
