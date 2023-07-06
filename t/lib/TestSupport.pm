@@ -28,6 +28,7 @@ sub move_test_files;
 sub modify_attrs_on_test_files;
 sub received_events;
 sub receive_event;
+sub compare_ok;
 
 # On the Mac, TMPDIR is a symbolic link.  We have to resolve that with
 # Cwd::realpath in order to be able to compare paths.
@@ -59,19 +60,8 @@ our $ignoreme_filter = sub {
 	return 1;
 };
 
-# For the (preliminary) MS-DOS implementation we had to significantly increase
-# the waiting timeout at the end of the tests.  Therefore, receive_events()
-# now signals that (probably) no more events will be coming by creating a
-# file.  If the callback gets a notification for this file it will immediately
-# send to the condition variable to stop the test.
-#
-# If more, unexpected, events would be coming in, the next test will fail.
-# Only the last test would be critical because for it, such trailing garbage
-# could not be detected.  If that garbage is coming in in reasonable time,
-# we will still detected it if catch_trailing_events() is called.  And other
-# cases are so unlikely that we will ignore them.
 our $test_count = 0;
-our $testing_done_format = 'one/testing-done-%u';
+our $testing_done_format = 'one/testing-done-%s';
 
 sub next_testing_done_file {
 	sprintf $testing_done_format, $test_count + 1;
@@ -126,11 +116,12 @@ sub modify_attrs_on_test_files {
 our @received;
 our %expected;
 our $cv;
+our $description;
 
 sub receive_event {
 	my (@events) = @_;
 
-	my $testing_file = sprintf $testing_done_format, $test_count;
+	my $testing_file = sprintf $testing_done_format, '[1-9][0-9]*';
 	my $ready;
 	foreach my $event (@events) {
 		if ($event->path =~ m{/$testing_file$}) {
@@ -140,7 +131,12 @@ sub receive_event {
 		}
 	}
 
-	$cv->send if $ready;
+	if ($ready) {
+		compare_ok(\@received, \%expected, $description);
+		undef @received;
+
+		$cv->send;
+	}
 }
 
 sub catch_trailing_events {
@@ -169,8 +165,8 @@ sub catch_trailing_events {
 
 sub received_events {
 	my $setup = shift;
-	my $description = shift;
 
+	$description = shift;
 	%expected = @_;
 
 	foreach my $key (keys %expected) {
@@ -196,9 +192,6 @@ sub received_events {
 		});
 
 	$cv->recv;
-
-	compare_ok(\@received, \%expected, $description);
-	undef @received;
 }
 
 sub compare_ok {

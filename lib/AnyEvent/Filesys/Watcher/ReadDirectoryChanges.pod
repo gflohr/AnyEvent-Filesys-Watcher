@@ -5,8 +5,8 @@ AnyEvent::Filesys::Watcher::ReadDirectoryChanges - MS-DOS file system watcher
 =head1 SYNOPSIS
 
     $watcher = AnyEvent::Filesys::Watcher::FileSystemWatcher->new(
-		directories => ['lib', 't'],
-		callback => sub { warn "you're working too much"},
+        directories => ['lib', 't'],
+        callback => sub { warn "you're working too much"},
     );
 
     # This has the same effect as:
@@ -85,7 +85,7 @@ Directories are also files that basically store the list of files inside that
 directory.  Therefore, if you create or delete a file, the directory
 containing the file changes.  However, only the
 L<AnyEvent::Filesys::Watcher::ReadDirectoryChanges> backend can generate such
-modification events.  For the sake of compatibilty with the other backend, 
+modification events.  For the sake of compatibilty with the other backend,
 these modification events are filter out by default.  If you pass a truthy
 option, these events are included.
 

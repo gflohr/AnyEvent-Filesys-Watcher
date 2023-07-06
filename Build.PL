@@ -30,6 +30,7 @@ my %module_build_args = (
     "Locale::TextDomain" => 0,
     "Path::Iterator::Rule" => 0,
     "Scalar::Util" => 0,
+    "Thread::Queue" => "3.13",
     "base" => 0,
     "perl" => "5.008",
     "strict" => 0
@@ -94,10 +95,12 @@ if ( $^O =~ /bsd/i ) {
 
 if ( $^O eq 'MSWin32' ) {
 	$module_build_args{requires}{'Filesys::Notify::Win32::ReadDirectoryChanges'} = '0.04';
+	$module_build_args{requires}{'Thread::Queue'} = '3.13';
 }
 
 if ( $^O eq 'cygwin' ) {
 	$module_build_args{requires}{'Filesys::Notify::Win32::ReadDirectoryChanges'} = '0.04';
+	$module_build_args{requires}{'Thread::Queue'} = '3.13';
 }
 
 my $build = Module::Build->new(%module_build_args);

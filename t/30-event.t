@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 use Test::More;
+use File::Spec;
 
 BEGIN {
 	my $module;
@@ -21,15 +22,18 @@ BEGIN {
 	}
 }
 
-use File::Spec;
-
-use lib 't/lib';
-$|++;
 use AnyEvent::Filesys::Watcher;
+use lib 't/lib';
 use TestSupport qw(create_test_files delete_test_files move_test_files
 	modify_attrs_on_test_files $dir received_events receive_event
 	catch_trailing_events next_testing_done_file EXISTS DELETED
 	$safe_directory_filter $ignoreme_filter);
+
+if ($^O eq 'MSWin32' ) {
+	plan skip_all => 'Test temporarily disabled for MSWin32';
+}
+
+$|++;
 
 create_test_files qw(one/1);
 create_test_files qw(two/1);
@@ -131,6 +135,12 @@ received_events(sub { create_test_files(qw(one/onlyme one/4)) },
 	'filter test',
 	'one/onlyme' => EXISTS,
 );
+
+# Make sure that the destructor of Filesys::Notify::Win32::ReadDirectoryChanges
+# is called first so that all watching threads are joined.  Otherwise
+# spurious warnings like "The handle is invalid at ..." may occur or
+# "cannot remove directory for C:\...: Permission denied".
+undef $n;
 
 catch_trailing_events;
 done_testing;

@@ -22,6 +22,7 @@ lib/AnyEvent/Filesys/Watcher/KQueue.pm
 lib/AnyEvent/Filesys/Watcher/KQueue.pod
 lib/AnyEvent/Filesys/Watcher/ReadDirectoryChanges.pm
 lib/AnyEvent/Filesys/Watcher/ReadDirectoryChanges.pod
+lib/AnyEvent/Filesys/Watcher/ReadDirectoryChanges/Queue.pm
 lib/LocaleData/de/LC_MESSAGES/AnyEvent-Filesys-Watch.mo
 po/AnyEvent-Filesys-Watcher.pot
 po/Makefile
@@ -32,6 +33,7 @@ t/00-base.t
 t/01-load.t
 t/02-cyclic-references.t
 t/03-alias-callback.t
+t/04-ms-dos-queue.t
 t/10-plugins.t
 t/11-plugin-default.t
 t/12-direct-invocation.t

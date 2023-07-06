@@ -17,7 +17,6 @@ my $watcher = AnyEvent::Filesys::Watcher->new(
 	directories => ["$dir/one"],
 	callback => sub {},
 );
-warn $watcher;
 
 my $old_fs = $watcher->_scanFilesystem($dir, "$dir/one");
 is keys %$old_fs, 6, '_scanFilesystem: got all of them';
