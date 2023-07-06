@@ -38,13 +38,10 @@ sub new {
 			my $pending = $watcher->queue->pending;
 			if ($pending) {
 				my @raw_events = $watcher->queue->dequeue($pending);
-				my @events = $alter_ego->_transformEvents(@raw_events);
 
-				# Somethimes, there is a lone "renamed" event which gets
-				# ignored.
 				$alter_ego->_processEvents(
-					@events
-				) if @events;
+					@raw_events
+				);
 			}
 		}
 	);
@@ -59,15 +56,7 @@ sub new {
 }
 
 sub _parseEvents {
-	my ($self, $filter, @events) = @_;
-
-	# The events have already been cooked and filtered.
-
-	return @events;
-}
-
-sub _transformEvents {
-	my ($self, @all_events) = @_;
+	my ($self, $filter, @all_events) = @_;
 
 	my %events;
 	my @events;
@@ -92,14 +81,15 @@ sub _transformEvents {
 
 		$path = $self->_makeAbsolute($path);
 
-		push @events, AnyEvent::Filesys::Watcher::Event->new(
+		my $cooked = AnyEvent::Filesys::Watcher::Event->new(
 			path => $path,
 			type => $action,
 			is_directory => -d $path,
 		);
+		push @events, $cooked if $filter->($cooked);
 	}
 
-	return $self->_applyFilter(@events);
+	return @events;
 }
 
 1;
