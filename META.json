@@ -21,7 +21,6 @@
       },
       "configure" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "0",
             "Module::Build" : "0.28"
          }
       },

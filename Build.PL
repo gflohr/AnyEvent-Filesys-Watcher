@@ -11,7 +11,6 @@ my %module_build_args = (
     "Module::Build" => "0.28"
   },
   "configure_requires" => {
-    "ExtUtils::MakeMaker" => 0,
     "Module::Build" => "0.28"
   },
   "dist_abstract" => "Watch file system for changes",
@@ -79,6 +78,27 @@ my %fallback_build_requires = (
 unless ( eval { Module::Build->VERSION(0.4004) } ) {
   delete $module_build_args{test_requires};
   $module_build_args{build_requires} = \%fallback_build_requires;
+}
+
+if ( $^O eq 'linux' ) {
+	$module_build_args{requires}{'Linux::Inotify2'} = '1.22';
+}
+
+if ( $^O eq 'darwin' ) {
+	$module_build_args{requires}{'Mac::FSEvents'} = '0.10';
+}
+
+if ( $^O =~ /bsd/i ) {
+	$module_build_args{requires}{'BSD::Resource'} = '1.2911';
+	$module_build_args{requires}{'IO::KQueue'} = '0.34';
+}
+
+if ( $^O eq 'MSWin32' ) {
+	$module_build_args{requires}{'Filesys::Notify::Win32::ReadDirectoryChanges'} = '0.04';
+}
+
+if ( $^O eq 'cygwin' ) {
+	$module_build_args{requires}{'Filesys::Notify::Win32::ReadDirectoryChanges'} = '0.04';
 }
 
 my $build = Module::Build->new(%module_build_args);

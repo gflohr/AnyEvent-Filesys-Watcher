@@ -20,7 +20,6 @@ build_requires:
   lib: '0'
   warnings: '0'
 configure_requires:
-  ExtUtils::MakeMaker: '0'
   Module::Build: '0.28'
 dynamic_config: 1
 generated_by: 'Dist::Zilla version 6.030, CPAN::Meta::Converter version 2.150010'
