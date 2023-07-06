@@ -10,6 +10,7 @@ use Scalar::Util qw(weaken);
 use File::Spec;
 use Cwd;
 use AnyEvent::Filesys::Watcher::Event;
+use AnyEvent::Filesys::Watcher::ReadDirectoryChanges::Queue;
 
 use base qw(AnyEvent::Filesys::Watcher);
 
@@ -18,8 +19,10 @@ sub new {
 
 	my $self = $class->SUPER::_new(%args);
 
-	$self->{__base_directory} = Cwd::cwd();
-	my $watcher = Filesys::Notify::Win32::ReadDirectoryChanges->new;
+	my $queue = AnyEvent::Filesys::Watcher::ReadDirectoryChanges::Queue->new;
+	my $watcher = Filesys::Notify::Win32::ReadDirectoryChanges->new(
+		queue => $queue,
+	);
 	foreach my $directory (@{$self->directories}) {
 		eval {
 			$watcher->watch_directory(path => $directory, subtree => 1);
