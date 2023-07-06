@@ -95,5 +95,11 @@ received_events(sub { create_test_files(qw(one/onlyme one/4)) },
 	'one/onlyme' => EXISTS,
 );
 
+# Make sure that the destructor of Filesys::Notify::Win32::ReadDirectoryChanges
+# is called first so that all watching threads are joined.  Otherwise
+# spurious warnings like "The handle is invalid at ..." may occur or
+# "cannot remove directory for C:\...: Permission denied".
+undef $n;
+
 catch_trailing_events;
 done_testing;

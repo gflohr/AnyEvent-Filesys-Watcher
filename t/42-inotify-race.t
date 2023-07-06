@@ -56,5 +56,11 @@ $n->filter($safe_directory_filter);
 
 ## ls: one/sub/1 one/sub/2 one/sub/ignoreme/1 one/sub/3 two/1 tow/sub/ignoreme/sub/1
 
+# Make sure that the destructor of Filesys::Notify::Win32::ReadDirectoryChanges
+# is called first so that all watching threads are joined.  Otherwise
+# spurious warnings like "The handle is invalid at ..." may occur or
+# "cannot remove directory for C:\...: Permission denied".
+undef $n;
+
 catch_trailing_events;
 done_testing;
