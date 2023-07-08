@@ -12,6 +12,7 @@ use Scalar::Util qw(reftype);
 use Path::Iterator::Rule;
 use File::Spec;
 use Cwd;
+use Scalar::Util qw(reftype);
 
 use AnyEvent::Filesys::Watcher::Event;
 
@@ -35,8 +36,8 @@ sub new {
 		$args{callback} = delete $args{cb};
 	}
 
-	if (!exists $args{base_dir}) {
-		$args{base_dir} = Cwd::cwd();
+	if (exists $args{dirs} && !exists $args{directories}) {
+		$args{directories} = delete $args{dirs};
 	}
 
 	if ($backend_class) {
@@ -92,19 +93,37 @@ sub _new {
 
 	my $self = bless {}, $class;
 
+	# Resolve aliases once more.  This is necessary so that the backend classes
+	# can be instantiated directly.
+	if (exists $args{dirs} && !exists $args{directories}) {
+		$args{directories} = delete $args{dirs};
+	}
+
 	if (exists $args{cb} && !exists $args{callback}) {
 		$args{callback} = delete $args{cb};
 	}
 
-	my @required = qw(directories callback);
-	foreach my $required (@required) {
-		if (!exists $args{$required}) {
-			require Carp;
-			Carp::croak(
-				__x("Mandatory argument '{arg}' missing",
-				    arg => $required)
-			);
-		}
+	if (!exists $args{callback}) {
+		require Carp;
+		Carp::croak(__"The option 'callback' is mandatory");
+	}
+
+	if (reftype $args{callback} ne 'CODE') {
+		require Carp;
+		Carp::croak(__"The argument to 'callback' must be a code reference");
+	}
+
+	if (exists $args{raw_events} && reftype $args{raw_events} ne 'CODE') {
+		require Carp;
+		Carp::croak(__"The argument to 'raw_events' must be a code reference");
+	}
+
+	if (!exists $args{base_dir}) {
+		$args{base_dir} = Cwd::cwd();
+	}
+
+	if (!exists $args{directories}) {
+		$args{directories} = $args{base_dir};
 	}
 
 	$args{interval} = 1 if !exists $args{interval};
@@ -260,6 +279,10 @@ sub _watcher {
 
 sub _processEvents {
 	my ($self, @raw_events) = @_;
+
+	if ($self->{__raw_events}) {
+		@raw_events = $self->{__raw_events}->(@raw_events);
+	}
 
 	my @events = $self->_parseEvents(
 		sub { $self->_applyFilter(@_) },

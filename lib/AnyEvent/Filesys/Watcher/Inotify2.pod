@@ -46,7 +46,19 @@ B<OPTIONS> is a hash of named options:
 B<DIRECTORIES> is a reference to an array of directories to monitor. A single
 directory can also be passed as a scalar.
 
-This argument is required.
+Optional. The default is the base directory, see "base_dir" below.
+
+=item B<dirs DIRECTORIES>
+
+This is an alias for the option "directories".
+
+=item B<base_dir BASE_DIRECTORY>
+
+Relative path names for the "directories" option are resolved relative to
+B<BASE_DIRECTORY>.
+
+The default is the current working directory at the time that the
+object was instantiated.
 
 =item B<callback CALLBACK>
 
@@ -54,13 +66,25 @@ A code reference that is called, when a modification to the monitored
 directories is deteced. The callback is passed a list of
 L<AnyEvent::Filesys::Watcher::Events>.
 
-This argument is required.
+One of the options "callback" or "raw_events" (see below) are required.
 
 =item B<cb CALLBACK>
 
 This is an alias for the parameter B<callback>.
 
 This argument is required if the argument B<callback> has not been given.
+
+=item B<interval SECONDS>
+
+Specifies the time in fractional seconds between file system checks
+for the L<AnyEvent::Filesys::Watcher::Fallback> implementation.
+
+Specifies the latency for L<Mac::FSEvents> for the
+L<AnyEvent::Filesys::Watcher::FSEvents> implementation.
+
+Ignored for the L<AnyEvent::Filesys::Watcher::Inotify2> implementation.
+
+Optional. The default is backend-specific.
 
 =item B<filter FILTER>
 
@@ -74,19 +98,21 @@ should cause an event.
 
 Optional. By default, all events are passed through.
 
-=item B<skip_subdirectories BOOLEAN>
+=item B<raw_events CALLBACK>
 
-Skips subdirectories and anything in them while building a list of
-files/dirs to watch. Optional.
+Allows you to subscribe to the raw events returned by the os-specific backend.
+The B<CALLBACK> gets invoked with a list of these backend-specific options and
+should return a list of backend-specific options. Did you read this? You have
+to return a list of events.
 
-=item B<parse_events BOOLEAN>
+You can use this option if you are interested in the original events from your
+backend or if you want to filter these events before being processed.
 
-If you pass a truthy value for this option, the events returned by the Linux
-kernel are parsed in order to generate the L<AnyEvent::Filesys::Watcher::Event>
-events because they contain enough information.
+You can use both the option "callback" and "raw_events" but the filter
+specified with the "filter" option is, of course, not applied to the raw
+events because their exact structure is backend-specific.
 
-Normally, it is safe to use this option but you must be aware that there are
-marginal differences in the events triggered:
+One of the options "callback" (see above) or "raw_events" are required.
 
 =over 8
 
