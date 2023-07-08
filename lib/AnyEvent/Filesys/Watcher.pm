@@ -261,19 +261,21 @@ sub _watcher {
 sub _processEvents {
 	my ($self, @raw_events) = @_;
 
-	my @events;
-	if ($self->parseEvents and $self->can('_parseEvents') ) {
-		@events = $self->_parseEvents(
-			sub { $self->_applyFilter(@_) },
-				@raw_events
-		);
-	} else {
-		@events = $self->rescan;
+	my @events = $self->_parseEvents(
+		sub { $self->_applyFilter(@_) },
+		@raw_events
+	);
+
+	if (@events) {
+		$self->_postProcessEvents(@events);
+		$self->callback->(@events) if @events;
 	}
 
-	$self->callback->(@events) if @events;
-
 	return \@events;
+}
+
+sub _parseEvents {
+	shift->rescan;
 }
 
 sub rescan {
@@ -285,14 +287,11 @@ sub rescan {
 		$self->_diffFilesystem($self->_oldFilesystem, $new_fs));
 	$self->_oldFilesystem($new_fs);
 
-	$self->_postProcessEvents(@events);
-
 	return @events;
 }
 
-# Some backends (when not using parse_events) need to add files
-# (KQueue) or directories (Inotify2) to the watch list after they are
-# created. Give them a chance to do that here.
+# Some backends need to add files (KQueue) or directories (Inotify2) to the
+# watch list after they are
 sub _postProcessEvents {}
 
 sub _applyFilter {

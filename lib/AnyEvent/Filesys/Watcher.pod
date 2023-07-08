@@ -14,8 +14,6 @@ AnyEvent::Filesys::Watcher - Watch file system for changes
         my (@events) = @_;
             # Process.
         },
-        # Improves efficiency on Linux.
-        parse_events => 1,
     );
 
 =head1 DESCRIPTION
@@ -108,27 +106,6 @@ L<AnyEvent::Filesys::Watcher::FSEvents>, for BSD systems it is
 L<AnyEvent::Filesys::Watcher::KQueue>, and for all other systems it is
 L<AnyEvent::Filesys::Watcher::Fallback>.
 
-=item B<parse_events BOOLEAN>
-
-In backends that support it (currently INotify2 and ReadDirectoryChanges), parse the events
-instead of rescanning the file system for changed "stat()" information.
-Note, that this might cause slight changes in behavior. In
-particular, the Inotify2 backend will generate an additional
-'modified' event when a file changes (once when opened for write,
-and once when modified).
-
-=item B<directory_writes BOOLEAN>
-
-Directories are also files that basically store the list of files inside that
-directory.  Therefore, if you create or delete a file, the directory
-containing the file changes.  However, only the
-L<AnyEvent::Filesys::Watcher::ReadDirectoryChanges> backend can generate such
-modification events.  For the sake of compatibilty with the other backends,
-these modification events are filter out by default.  If you pass a truthy
-option, these events are included.
-
-The default for this optional parameter is false.
-
 =back
 
 =back
@@ -154,10 +131,6 @@ Getter for the interval between polls.
 =item B<filter [FILTER]>
 
 Getter/setter for the filter.
-
-=item B<parseEvents [PARSE_EVENTS]>
-
-Getter/setter for the "parse_events" flag.
 
 =back
 
@@ -228,7 +201,7 @@ A robust implementation using this module should follow two rules:
 
 =item The named argument "skip_subdirs" is not supported.
 
-=item The method is "parseEvents" and not "parse_events".
+=item The named argument "parse_events" is ignored.  Events are parsed by the backend, if possible, otherwise the file system is scanned.
 
 =item None of the L<Moose> methods like "does()" are implemented.
 
