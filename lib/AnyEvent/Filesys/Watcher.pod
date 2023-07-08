@@ -235,9 +235,7 @@ A robust implementation using this module should follow two rules:
 
 =item Methods and named arguments are "callback" and not "cb".
 
-=item The named argument is "skip_subdirectories" and not "skip_subdirs".
-
-=item The method is "skipSubdirectories" and not "skip_subdirs".
+=item The named argument "skip_subdirs" is not supported.
 
 =item The method is "parseEvents" and not "parse_events".
 

@@ -3,6 +3,8 @@ package TestSupport;
 use strict;
 use warnings;
 
+use AnyEvent;
+use AnyEvent::Filesys::Watcher;
 use File::Temp qw(tempdir);
 use File::Path;
 use File::Basename;
@@ -18,54 +20,20 @@ use constant DELETED => 0;
 use Exporter qw(import);
 our @EXPORT = qw(EXISTS DELETED);
 our @EXPORT_OK = qw(create_test_files delete_test_files move_test_files
-	modify_attrs_on_test_files $dir received_events receive_event
-	catch_trailing_events next_testing_done_file EXISTS DELETED
-	$safe_directory_filter $ignoreme_filter);
+	modify_attrs_on_test_files test EXISTS DELETED);
 
 sub create_test_files;
 sub delete_test_files;
 sub move_test_files;
 sub modify_attrs_on_test_files;
-sub received_events;
-sub receive_event;
+sub test;
 sub compare_ok;
+sub test_done;
 
 # On the Mac, TMPDIR is a symbolic link.  We have to resolve that with
 # Cwd::realpath in order to be able to compare paths.
 our $dir = Cwd::realpath(tempdir CLEANUP => 1);
 my $size = 1;
-
-# The MS-DOS implementation generates modified events for directories, if
-# the directory contents changes.  Although technically correct, this
-# is not done by the other backends.  This filter therefore filters out
-# modified events for directories.
-our $safe_directory_filter = sub {
-	my ($event) = @_;
-
-	if ('MSWin32' eq $^O || 'cygwin' eq $^O) {
-		return if $event->isDirectory && 'modified' eq $event->type;
-	}
-
-	return 1;
-};
-
-our $ignoreme_filter = sub {
-	my ($event) = @_;
-
-	$safe_directory_filter->($event) or return;
-
-	return if $event->path =~ m{/ignoreme/};
-	return if $event->path =~ m{/ignoreme$};
-
-	return 1;
-};
-
-our $test_count = 0;
-our $testing_done_format = 'one/testing-done-%s';
-
-sub next_testing_done_file {
-	sprintf $testing_done_format, $test_count + 1;
-}
 
 sub create_test_files {
 	my (@files) = @_;
@@ -113,90 +81,67 @@ sub modify_attrs_on_test_files {
 	}
 }
 
-our @received;
-our %expected;
-our $cv;
-our $description;
+sub test {
+	my (%args) = @_;
 
-sub receive_event {
-	my (@events) = @_;
+	$args{setup} ||= {};
+	$args{filter} ||= sub { 1 };
+	$args{expected} ||= {};
+	$args{ignore} ||= [];
 
-	my $testing_file = sprintf $testing_done_format, '[1-9][0-9]*';
-	my $ready;
-	foreach my $event (@events) {
-		if ($event->path =~ m{/$testing_file$}) {
-			$ready = 1;
-		} else {
-			push @received, $event;
-		}
-	}
+	my @received;
+	my $watcher = AnyEvent::Filesys::Watcher->new(
+		directories => $dir,
+		callback => sub {
+			push @received, @_;
+		},
+		filter => $args{filter},
+		backend => $args{backend},
+		parse_events => 1,
+		skip_subdirectories => $args{skip_subdirectories},
+	);
 
-	if ($ready) {
-		compare_ok(\@received, \%expected, $description);
-		undef @received;
+	$args{setup}->();
 
-		$cv->send;
-	}
-}
-
-sub catch_trailing_events {
-	my $stop = AnyEvent->condvar;
-
-	# Catch at most 100 events.
-	%expected = map { $_ => 1 } (1 .. 100);
+	my $done = AnyEvent->condvar;
 
 	my $count = 0;
-	my $t = AnyEvent->timer(
-		after => 0.1,
-		interval => 0.2,
+	my $timer = AnyEvent->timer(
+		interval => 0.1,
 		cb => sub {
-			if (@received) {
-				compare_ok(\@received, {}, 'trailing garbage events');
-				$stop->send; # Fail fast.
-			} elsif (++$count > 10) {
-				ok 1, 'no trailing garbage events';
-				$stop->send;
+			$done->send if test_done \@received, $args{expected};
+			if (++$count > 30) {
+				ok 0, "$args{description}: lame test\n";
+				$done->send;
 			}
 		},
 	);
 
-	$stop->recv;
+	$done->recv;
+
+	compare_ok $args{description}, \@received, $args{expected}, $args{ignore};
 }
 
-sub received_events {
-	my $setup = shift;
+sub test_done {
+	my ($received, $expected) = @_;
 
-	$description = shift;
-	%expected = @_;
+	my %expected = %$expected;
 
-	foreach my $key (keys %expected) {
-		my $value = $expected{$key};
-		if ($value !~ /^0|1$/) {
-			require Carp;
-			Carp::croak("use boolean result (0 or 1)");
-		}
+	foreach my $event (@$received) {
+		my $path = File::Spec->abs2rel($event->path, $dir);
+		# This is not portable but good enough for our test cases.  Otherwise
+		# we would have to drag in Path::Class as a dependency.
+		$path =~ s{\\}{/}g;
+		delete $expected{$path};
 	}
 
-	$cv = AnyEvent->condvar;
+	return if keys %expected;
 
-	$setup->();
-
-	my $testing_file = sprintf $testing_done_format, ++$test_count;
-	create_test_files $testing_file;
-
-	my $w = AnyEvent->timer(
-		after => 20,
-		cb => sub {
-			ok 0, "$description: lame test case (should not happen)";
-			$cv->send;
-		});
-
-	$cv->recv;
+	return 1;
 }
 
 sub compare_ok {
-	my ($received, $expected, $description) = @_;
-	$description ||= "compare events";
+	my ($description, $received, $expected, $ignore) = @_;
 
 	$description .= ':';
 
@@ -219,8 +164,14 @@ sub compare_ok {
 		}
 	}
 
+	$ignore = [$ignore] if !ref $ignore;
+	my %ignore = map { $_ => 1 } @$ignore;
+
 	# Now match got versus expected.
 	foreach my $path (keys %got) {
+		next if $ignore{$path};
+
+		# FIXME! That doesn't work if multiple events are fired.
 		my $expected_type = delete $expected->{$path};
 		if (!defined $expected_type) {
 			my $types = join ', ', @{$received_events{$path}};

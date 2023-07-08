@@ -2,141 +2,90 @@ use strict;
 use warnings;
 
 use Test::More;
-
-BEGIN {
-	my $module;
-	if ($^O eq 'linux') {
-		$module = 'Linux/Inotify2.pm';
-	} elsif ($^O eq 'darwin') {
-		$module = 'Mac/FSEvents.pm';
-	} elsif ($^O eq 'MSWin32' || $^O eq 'cygwin') {
-		$module = 'Filesys/Notify/Win32/ReadDirectoryChanges.pm';
-	} elsif ($^O =~ /bsd/i) {
-		$module = 'IO/KQueue.pm';
-	}
-
-	if ($module) {
-		eval { require $module };
-		plan(skip_all => "no os-specific backend installed") if $@;
-	}
-}
-
 use File::Spec;
 
 use lib 't/lib';
-$|++;
-use AnyEvent::Filesys::Watcher;
 use TestSupport qw(create_test_files delete_test_files move_test_files
-	modify_attrs_on_test_files $dir received_events receive_event
-	catch_trailing_events next_testing_done_file EXISTS DELETED
-	$safe_directory_filter $ignoreme_filter);
+	modify_attrs_on_test_files test EXISTS DELETED);
 
-create_test_files qw(one/1);
-create_test_files qw(two/1);
-create_test_files qw(one/sub/1);
-## ls: one/1 one/sub/1 two/1
+$|++;
 
-my $n = AnyEvent::Filesys::Watcher->new(
-	directories => [ map { File::Spec->catfile($dir, $_ ) } qw(one two) ],
-	filter => $ignoreme_filter,
-	callback => sub { receive_event(@_) },
+# ls: +foo +bar +baz
+test(
+	setup => sub { create_test_files(qw(foo bar baz)) },
+	description => 'create three files',
+	expected => {
+		foo => EXISTS,
+		bar => EXISTS,
+		baz => EXISTS,
+	},
+	ignore => '.',
 );
 
-isa_ok $n, 'AnyEvent::Filesys::Watcher';
-
-SKIP: {
-	skip "not sure which os we are on", 1
-		unless $^O =~ /linux|darwin|bsd|MSWin32|cygwin/i;
-	isa_ok($n, 'AnyEvent::Filesys::Watcher::Inotify2',
-		'... with the linux backend')
-		if $^O eq 'linux';
-	isa_ok($n, 'AnyEvent::Filesys::Watcher::FSEvents',
-		'... with the mac backend')
-		if $^O eq 'darwin';
-	isa_ok($n, 'AnyEvent::Filesys::Watcher::ReadDirectoryChanges',
-		'... with the MS-DOS backend')
-		if $^O eq 'MSWin32';
-	isa_ok($n, 'AnyEvent::Filesys::Watcher::ReadDirectoryChanges',
-		'... with the MS-DOS backend')
-		if $^O eq 'cygwin';
-	isa_ok($n, 'AnyEvent::Filesys::Watcher::KQueue',
-		'... with the bsd backend')
-		if $^O =~ /bsd/;
-}
-
-diag "This might take a few seconds to run...";
-
-# ls: one/1 one/sub/1 +one/sub/2 two/1
-$n->filter($safe_directory_filter);
-received_events(
-	sub { create_test_files(qw(one/sub/2)) },
-	'create a filex',
-	'one/sub/2', EXISTS,
+# ls: ~foo bar ~baz
+test(
+	setup => sub { create_test_files(qw(foo baz)) },
+	description => 'modify two files',
+	expected => {
+		foo => EXISTS,
+		baz => EXISTS,
+	},
 );
 
-# ls: one/1 +one/2 one/sub/1 one/sub/2 two/1 +two/sub/2
-received_events(
-	sub { create_test_files(qw(one/2 two/sub/2)) },
-	'create file in new subdir',
-	'one/2' => EXISTS,
-	'two/sub' => EXISTS,
-	'two/sub/2' => EXISTS,
-);
-$n->filter($ignoreme_filter);
-
-# ls: one/1 ~one/2 one/sub/1 one/sub/2 two/1 two/sub/2
-received_events(
-	sub { create_test_files(qw(one/2)) },
-	'modify existing file',
-	'one/2' => EXISTS,
-);
-
-# ls: one/1 one/2 one/sub/1 one/sub/2 two/1 two/sub -two/sub/2
-received_events(
-	sub { delete_test_files(qw(two/sub/2)) },
-	'deletes a file',
-	'two/sub/2' => DELETED,
-);
-
-# ls: one/1 one/2 +one/ignoreme +one/3 one/sub/1 one/sub/2 two/1 two/sub
-received_events(
-	sub { create_test_files(qw(one/ignoreme one/3)) },
-	'creates two files one should be ignored',
-	'one/3' => EXISTS,
-);
-
-# ls: one/1 one/2 one/ignoreme -one/3 +one/5 one/sub/1 one/sub/2 two/1 two/sub
-received_events(sub { move_test_files('one/3' => 'one/5' ) },
-	'move files',
-	'one/3' => DELETED,
-	'one/5' => EXISTS,
+# ls: foo bar baz +subdir/file
+test(
+	setup => sub { create_test_files(qw(subdir/file)) },
+	description => 'create file in subdirectory',
+	expected => {
+		subdir => EXISTS,
+		'subdir/file' => EXISTS,
+	},
 );
 
 SKIP: {
-	skip "skip attr mods on Win32", 1 if ($^O eq 'MSWin32' || $^O eq 'cygwin');
+	skip "skip attr mods on Win32", 1 if $^O eq 'MSWin32';
 
-	# ls: one/1 one/2 one/ignoreme one/5 one/sub/1 one/sub/2 ~two/1 ~two/sub
-	received_events(
-		sub { modify_attrs_on_test_files(qw(two/1 two/sub)) },
-		'modify attributes',
-		'two/1' => EXISTS,
-		'two/sub' => EXISTS,
+	# ls: ~foo ~bar baz subdir/file
+	test(
+		setup => sub { modify_attrs_on_test_files(qw(foo bar)) },
+		description => 'modify attributes',
+		expected => {
+			'foo' => EXISTS,
+			'bar' => EXISTS,
+		},
 	);
 }
 
-# ls: one/1 one/2 one/ignoreme +one/onlyme +one/4 one/5 one/sub/1 one/sub/2 two/1 two/sub
-my $trigger_filename = next_testing_done_file;
-$n->filter(qr{/(?:onlyme|$trigger_filename)$});
-received_events(sub { create_test_files(qw(one/onlyme one/4)) },
-	'filter test',
-	'one/onlyme' => EXISTS,
+# ls: foo bar -baz +bazoo subdir/file
+test(
+	setup => sub { move_test_files(qw(baz bazoo)) },
+	description => 'move file',
+	expected => {
+		baz => DELETED,
+		bazoo => EXISTS,
+	},
 );
 
-# Make sure that the destructor of Filesys::Notify::Win32::ReadDirectoryChanges
-# is called first so that all watching threads are joined.  Otherwise
-# spurious warnings like "The handle is invalid at ..." may occur or
-# "cannot remove directory for C:\...: Permission denied".
-undef $n;
+# ls: foo bar -bazoo subdir/file
+test(
+	setup => sub { move_test_files(qw(bazoo bar)) },
+	description => 'move and overwrite file',
+	expected => {
+		bazoo => DELETED,
+		bar => EXISTS,
+	},
+);
 
-catch_trailing_events;
+# ls:
+test(
+	setup => sub { delete_test_files(qw(foo bar subdir/file subdir)) },
+	description => 'move and overwrite file',
+	expected => {
+		foo => DELETED,
+		bar => DELETED,
+		'subdir/file' => DELETED,
+		subdir => DELETED,
+	},
+);
+
 done_testing;

@@ -6,9 +6,11 @@ use Data::Dump qw(ddx);
 
 use AnyEvent::Filesys::Watcher;
 use lib 't/lib';
-use TestSupport qw(create_test_files delete_test_files $dir);
+use TestSupport qw(create_test_files delete_test_files);
 
 # Tests for RT#72849
+
+my $dir = $TestSupport::dir;
 
 plan skip_all => 'symlink not implemented on Win32' if $^O eq 'MSWin32';
 

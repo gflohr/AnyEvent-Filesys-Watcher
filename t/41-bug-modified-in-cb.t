@@ -3,30 +3,29 @@ use warnings;
 
 use Test::More;
 
+use AnyEvent;
 use AnyEvent::Filesys::Watcher;
 use lib 't/lib';
-use TestSupport qw(create_test_files delete_test_files move_test_files
-	modify_attrs_on_test_files $dir received_events receive_event
-	catch_trailing_events next_testing_done_file EXISTS DELETED);
+use TestSupport qw(create_test_files delete_test_files);
 
 $|++;
-
-# Prevent the directory 'one' from being created by the TestSupport library.
-$TestSupport::testing_done_format = 'testing-done-%s';
 
 sub run_test {
 	my %extra_config = @_;
 
+	my $done = AnyEvent->condvar;
+	my @received;
 	my $n = AnyEvent::Filesys::Watcher->new(
-		directories => [$dir],
+		directories => [$TestSupport::dir],
 		callback => sub {
-			receive_event(@_);
+			push @received, @_;
 
 			# This call back deletes any created files
 			foreach my $event (@_) {
-				if ($event->path !~ m{/testing-done-[1-9][0-9]*$}) {
-					unlink $event->path if $event->type eq 'created'
-						&& !$event->isDirectory;
+				unlink $event->path if $event->type eq 'created'
+					&& !$event->isDirectory;
+				if ('deleted' eq $event->type) {
+					$done->send;
 				}
 			}
 		},
@@ -35,17 +34,31 @@ sub run_test {
 	isa_ok $n, 'AnyEvent::Filesys::Watcher';
 
 	# Create a file, which will be delete in the callback
-	received_events(
-		sub { create_test_files('foo') },
-		'create a file',
-		foo => EXISTS,
+	create_test_files 'foo';
+
+	my $timer = AnyEvent->timer(
+		after => 5,
+		cb => sub {
+			ok 0, "lame test";
+			$done->send;
+		}
 	);
 
-	# Did we get notified of the delete?
-	received_events(
-		sub { }, 'deleted the file',
-		'foo' => DELETED,
-	);
+	$done->recv;
+
+	my $created_seen;
+	my $deleted_seen;
+	foreach my $event (@received) {
+		if ($event->path =~ m{/foo$}) {
+			if ('deleted' eq $event->type) {
+				$deleted_seen = 1;
+			} elsif ('created' eq $event->type) {
+				$created_seen = 1;
+			}
+		}
+	}
+	ok $created_seen, 'created';
+	ok $deleted_seen, 'deleted';
 }
 
 run_test;
@@ -56,5 +69,4 @@ SKIP: {
 	run_test backend => 'KQueue';
 }
 
-catch_trailing_events;
 done_testing;

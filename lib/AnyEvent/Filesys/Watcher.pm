@@ -167,10 +167,6 @@ sub parseEvents {
 	return $self->{__parse_events};
 }
 
-sub skipSubdirectories {
-	shift->{__skip_subdirectories};
-}
-
 # Taken from AnyEvent::Filesys::Notify.
 sub _scanFilesystem {
 	my ($self, @args) = @_;
@@ -182,9 +178,6 @@ sub _scanFilesystem {
 	my $fs_stats = {};
 
 	my $rule = Path::Iterator::Rule->new;
-	$rule->skip_subdirs(qr/./)
-		if (ref $self) =~ /^AnyEvent::Filesys::Watcher/
-		&& $self->skipSubdirectories;
 	my $next = $rule->iter(@paths);
 	while (my $file = $next->()) {
 		my $path = $self->_makeAbsolute($file);

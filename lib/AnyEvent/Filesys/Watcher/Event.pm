@@ -4,6 +4,8 @@ use strict;
 
 use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
 
+use Time::HiRes;
+
 sub new {
 	my ($class, %args) = @_;
 
@@ -28,6 +30,8 @@ sub new {
 				    type => $args{type})
 			);
 	}
+
+	$args{timestamp} ||= Time::HiRes::gettimeofday();
 
 	my $self = {};
 	foreach my $arg (keys %args) {
@@ -61,4 +65,22 @@ sub isDeleted {
 	return 'deleted' eq shift->{__type};
 }
 
+sub id {
+	return shift->{__id};
+}
+
+sub timestamp {
+	return shift->{__timestamp};
+}
+
+sub cmp {
+	my ($self, $other) = @_;
+
+	if (defined $self->{__id}) {
+		return $self->{__id} <=> $other->{__id}
+	}
+
+	return ($self->{__timestamp}->[0] <=> $self->{__timestamp}->[1])
+		|| ($self->{__timestamp}->[1] <=> $self->{__timestamp}->[1]);
+}
 1;
