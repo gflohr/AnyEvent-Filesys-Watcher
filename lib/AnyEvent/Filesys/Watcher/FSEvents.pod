@@ -47,7 +47,8 @@ The following constructors are available:
 Creates a new B<AnyEvent::Filesys::Watcher>.  The constructor may throw an
 exception in case of an error!
 
-B<OPTIONS> is a hash of named options:
+B<OPTIONS> is a hash of named options (all other options are passed verbatim
+to the constructor of L<Mac::FSEvents>):
 
 =over 8
 
@@ -74,9 +75,11 @@ This argument is required if the argument B<callback> has not been given.
 
 =item B<interval SECONDS>
 
-Specifies the time in fractional seconds between file system checks.
+Specifies the latency.  The latency is the time that the fsevents daemon waits
+for possibly merging multiple events.  A higher value therefore potentially
+reduces the amount of events created.
 
-Optional. The default is 1.0.
+Optional. The default is 0.1 s.
 
 =item B<filter FILTER>
 

@@ -8,10 +8,12 @@ use Data::Dump;
 use AnyEvent::Filesys::Watcher;
 use lib 't/lib';
 use TestSupport qw(create_test_files delete_test_files move_test_files
-	modify_attrs_on_test_files $dir);
+	modify_attrs_on_test_files);
 
 # Setup for tests
 create_test_files qw(1 one/1 two/1);
+
+my $dir = $TestSupport::dir;
 
 my $watcher = AnyEvent::Filesys::Watcher->new(
 	directories => ["$dir/one"],

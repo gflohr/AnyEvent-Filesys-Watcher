@@ -32,25 +32,19 @@ B<PATH> must be the absolute path to the file that changed.  Required.
 
 B<TYPE> must be one of "created", "modified", "deleted".  Required.
 
-=item B<isDirectory>
+=item B<is_directory BOOLEAN>
 
-Returns a truthy value if the event was triggered by a directory, false
-otherwise.
+B<BOOLEAN> must be a a truthy value for directories, false otherwise.
 
-=item B<isCreated>
+=item B<id ID>
 
-Returns a truthy value if the event was triggered by a file creation, false
-otherwise.
+B<ID> must be a unique identifier. Optional.
 
-=item B<isModified>
+=item B<timestamp TIMESTAMP>
 
-Returns a truthy value if the event was triggered by a file modification, false
-otherwise.
-
-=item B<isDeleted>
-
-Returns a truthy value if the event was triggered by a file deletion, false
-otherwise.
+Should be a reference to a two-element array with the seconds and the
+microseconds since the epoch.  If missing, it defaults to what
+L<Time::HiRes::gettimeofday()|Time::HiRes/gettimeofday> returns.
 
 =back
 
@@ -71,6 +65,14 @@ Returns the type as a string.
 =item B<isDirectory>
 
 Returns a truthy value for directories, false otherwise.
+
+=item B<id>
+
+Returns the unique id if specified.
+
+=item B<timestamp>
+
+Returns the timestamp of the event.
 
 =back
 

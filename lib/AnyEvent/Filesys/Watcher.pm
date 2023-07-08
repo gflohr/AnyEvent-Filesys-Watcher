@@ -167,10 +167,6 @@ sub parseEvents {
 	return $self->{__parse_events};
 }
 
-sub skipSubdirectories {
-	shift->{__skip_subdirectories};
-}
-
 # Taken from AnyEvent::Filesys::Notify.
 sub _scanFilesystem {
 	my ($self, @args) = @_;
@@ -182,9 +178,6 @@ sub _scanFilesystem {
 	my $fs_stats = {};
 
 	my $rule = Path::Iterator::Rule->new;
-	$rule->skip_subdirs(qr/./)
-		if (ref $self) =~ /^AnyEvent::Filesys::Watcher/
-		&& $self->skipSubdirectories;
 	my $next = $rule->iter(@paths);
 	while (my $file = $next->()) {
 		my $path = $self->_makeAbsolute($file);
@@ -268,29 +261,33 @@ sub _watcher {
 sub _processEvents {
 	my ($self, @raw_events) = @_;
 
-	# Some implementations provided enough information to parse the raw events,
-	# other require rescanning the file system (ie, Mac::FSEvents).
-	# have added a flag to avoid breaking old code.
 	my @events;
 	if ($self->parseEvents and $self->can('_parseEvents') ) {
-		@events =
-			$self->_parseEvents(
-				sub { $self->_applyFilter(@_) },
+		@events = $self->_parseEvents(
+			sub { $self->_applyFilter(@_) },
 				@raw_events
-			);
+		);
 	} else {
-		my $new_fs = $self->_scanFilesystem($self->directories);
-
-		@events = $self->_applyFilter(
-	 		$self->_diffFilesystem($self->_oldFilesystem, $new_fs));
-		$self->_oldFilesystem($new_fs);
-
-		$self->_postProcessEvents(@events);
+		@events = $self->rescan;
 	}
 
 	$self->callback->(@events) if @events;
 
 	return \@events;
+}
+
+sub rescan {
+	my ($self) = @_;
+
+	my $new_fs = $self->_scanFilesystem($self->directories);
+
+	my @events = $self->_applyFilter(
+		$self->_diffFilesystem($self->_oldFilesystem, $new_fs));
+	$self->_oldFilesystem($new_fs);
+
+	$self->_postProcessEvents(@events);
+
+	return @events;
 }
 
 # Some backends (when not using parse_events) need to add files
