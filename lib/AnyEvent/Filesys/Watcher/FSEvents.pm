@@ -198,7 +198,7 @@ sub new {
 	weaken $alter_ego;
 
 	# FIXME! Do we need that?
-	$self->_filesystemMonitor(\@fs_monitors);
+	#$self->_filesystemMonitor(\@fs_monitors);
 
 	$self->_watcher(\@watchers);
 
