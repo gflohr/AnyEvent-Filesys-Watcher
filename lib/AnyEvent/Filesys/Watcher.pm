@@ -268,29 +268,33 @@ sub _watcher {
 sub _processEvents {
 	my ($self, @raw_events) = @_;
 
-	# Some implementations provided enough information to parse the raw events,
-	# other require rescanning the file system (ie, Mac::FSEvents).
-	# have added a flag to avoid breaking old code.
 	my @events;
 	if ($self->parseEvents and $self->can('_parseEvents') ) {
-		@events =
-			$self->_parseEvents(
-				sub { $self->_applyFilter(@_) },
+		@events = $self->_parseEvents(
+			sub { $self->_applyFilter(@_) },
 				@raw_events
-			);
+		);
 	} else {
-		my $new_fs = $self->_scanFilesystem($self->directories);
-
-		@events = $self->_applyFilter(
-	 		$self->_diffFilesystem($self->_oldFilesystem, $new_fs));
-		$self->_oldFilesystem($new_fs);
-
-		$self->_postProcessEvents(@events);
+		@events = $self->rescan;
 	}
 
 	$self->callback->(@events) if @events;
 
 	return \@events;
+}
+
+sub rescan {
+	my ($self) = @_;
+
+	my $new_fs = $self->_scanFilesystem($self->directories);
+
+	my @events = $self->_applyFilter(
+		$self->_diffFilesystem($self->_oldFilesystem, $new_fs));
+	$self->_oldFilesystem($new_fs);
+
+	$self->_postProcessEvents(@events);
+
+	return @events;
 }
 
 # Some backends (when not using parse_events) need to add files
