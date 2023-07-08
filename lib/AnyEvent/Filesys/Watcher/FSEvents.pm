@@ -170,13 +170,15 @@ my %flag_type = (
 sub new {
 	my ($class, %args) = @_;
 
+	$args{interval} = 0.1 if !exists $args{interval};
+
 	my $self = $class->SUPER::_new(%args);
 
 	# FIXME! One monitor can watch multiple directories. No need for an array.
 	my @fs_monitors =
 		map { Mac::FSEvents->new({
 			path => $_,
-			latency => 0.1,
+			latency => $args{interval},
 			file_events => $has_file_events,
 			%args,
 		})}

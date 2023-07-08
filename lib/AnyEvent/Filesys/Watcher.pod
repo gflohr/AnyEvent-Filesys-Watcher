@@ -82,7 +82,7 @@ L<AnyEvent::Filesys::Watcher::FSEvents> implementation.
 
 Ignored for the L<AnyEvent::Filesys::Watcher::Inotify2> implementation.
 
-Optional. The default is 1.0.
+Optional. The default is backend-specific.
 
 =item B<filter FILTER>
 
@@ -116,11 +116,6 @@ Note, that this might cause slight changes in behavior. In
 particular, the Inotify2 backend will generate an additional
 'modified' event when a file changes (once when opened for write,
 and once when modified).
-
-=item B<skip_subdirectories BOOLEAN>
-
-Skips subdirectories and anything in them while building a list of
-files/dirs to watch. Optional.
 
 =item B<directory_writes BOOLEAN>
 
@@ -163,10 +158,6 @@ Getter/setter for the filter.
 =item B<parseEvents [PARSE_EVENTS]>
 
 Getter/setter for the "parse_events" flag.
-
-=item B<skipSubdirectories>
-
-Getter for the "skip_subdirectories" flag.
 
 =back
 
