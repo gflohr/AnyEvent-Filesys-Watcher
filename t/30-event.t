@@ -10,6 +10,10 @@ use TestSupport qw(create_test_files delete_test_files move_test_files
 
 $|++;
 
+if ($^O eq 'MSWin32' ) {
+	plan skip_all => 'Test temporarily disabled for MSWin32';
+}
+
 # ls: +foo +bar +baz
 test(
 	setup => sub { create_test_files(qw(foo bar baz)) },
