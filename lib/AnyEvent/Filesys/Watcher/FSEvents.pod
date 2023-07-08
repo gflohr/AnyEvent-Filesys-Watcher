@@ -47,7 +47,8 @@ The following constructors are available:
 Creates a new B<AnyEvent::Filesys::Watcher>.  The constructor may throw an
 exception in case of an error!
 
-B<OPTIONS> is a hash of named options:
+B<OPTIONS> is a hash of named options (all other options are passed verbatim
+to the constructor of L<Mac::FSEvents>):
 
 =over 8
 

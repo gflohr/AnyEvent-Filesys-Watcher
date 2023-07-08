@@ -174,33 +174,26 @@ sub new {
 
 	my $self = $class->SUPER::_new(%args);
 
-	# FIXME! One monitor can watch multiple directories. No need for an array.
-	my @fs_monitors =
-		map { Mac::FSEvents->new({
-			path => $_,
-			latency => $args{interval},
-			file_events => $has_file_events,
-			%args,
-		})}
-	@{$self->directories};
+	delete $args{directories};
+	delete $args{callback};
+	delete $args{filter};
+	my $fs_monitor = Mac::FSEvents->new({
+		path => $self->directories,
+		latency => $args{interval},
+		file_events => $has_file_events,
+		%args,
+	});
 
 	# Create an AnyEvent->io watcher for each fs_monitor
-	my @watchers;
 	my $alter_ego = $self;
-	for my $fs_monitor (@fs_monitors) {
-		my $w = AE::io $fs_monitor->watch, 0, sub {
-			if (my @raw_events = $fs_monitor->read_events) {
-				$alter_ego->_processEvents(@raw_events);
-			}
-		};
-		push @watchers, $w;
-	}
+	my $watcher = AE::io $fs_monitor->watch, 0, sub {
+		if (my @raw_events = $fs_monitor->read_events) {
+			$alter_ego->_processEvents(@raw_events);
+		}
+	};
 	weaken $alter_ego;
 
-	# FIXME! Do we need that?
-	#$self->_filesystemMonitor(\@fs_monitors);
-
-	$self->_watcher(\@watchers);
+	$self->_watcher($watcher);
 
 	return $self;
 }
