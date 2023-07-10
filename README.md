@@ -40,7 +40,7 @@ $ make install
 The current version 0.14 of `Mac::FSEvents` available on CPAN does not
 build on recent Mac OS versions.  This will hopefully change soon.
 
-## MS-DOS
+## MS-DOS "Windows"
 
 Install `Filesys::Notify::Win32::ReadDirectoryChanges`:
 
