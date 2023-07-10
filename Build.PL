@@ -27,11 +27,16 @@ my %module_build_args = (
     "Carp" => 0,
     "Cwd" => 0,
     "File::Spec" => 0,
+    "IO::Handle" => 0,
+    "IO::Select" => 0,
     "Locale::TextDomain" => 0,
     "Path::Iterator::Rule" => 0,
     "Scalar::Util" => 0,
+    "Socket" => 0,
     "Thread::Queue" => "3.13",
+    "Time::HiRes" => 0,
     "base" => 0,
+    "constant" => 0,
     "perl" => "5.008",
     "strict" => 0
   },
@@ -48,7 +53,6 @@ my %module_build_args = (
     "Test::More" => 0,
     "Test::Without::Module" => "0.21",
     "autodie" => 0,
-    "constant" => 0,
     "lib" => 0,
     "warnings" => 0
   }
@@ -69,7 +73,6 @@ my %fallback_build_requires = (
   "Test::More" => 0,
   "Test::Without::Module" => "0.21",
   "autodie" => 0,
-  "constant" => 0,
   "lib" => 0,
   "warnings" => 0
 );

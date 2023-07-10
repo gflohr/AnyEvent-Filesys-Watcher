@@ -16,10 +16,6 @@ use Scalar::Util qw(reftype);
 
 use AnyEvent::Filesys::Watcher::Event;
 
-# We remember which modules we have already unsuccessfully required
-# so that we can avoid the "Attempt to reload xyz.pm aborted".
-my %losers;
-
 # This constructor is kind of doing reversed inheritance.  It first sets up
 # the module, then selects a backend which is then instantiated.  The
 # backend is expected to invoke the protected constructor _new() below.
@@ -63,26 +59,21 @@ sub new {
 
 	my $self;
 	eval {
-		if (exists $losers{$backend_module}) {
-			die $losers{$backend_module};
-		} else {
-			require $backend_module;
-			$self = $backend_class->new(%args);
-		}
+		require $backend_module;
+		$self = $backend_class->new(%args);
 	};
 	if ($@) {
-		# Remember the exception so that we can re-throw it in case an attempt
-		# is made to require the same module again.
-		$losers{$backend_module} = $@;
+		if ($@ =~ /^Can't locate $backend_module in \@INC/) {
+			warn __x(<<"EOF", class => $backend_class);
+Missing backend module '{class}'!
+You either have to install it or specify 'Fallback' as the backend but that is
+not very efficient.
 
-		# Explicitely requested?
-		if (exists $args{backend}
-		    || 'AnyEvent::Filesys::Watcher::Fallback' eq $backend_class) {
-			die $@ if exists $args{backend};
+Original error message:
+EOF
 		}
 
-		require AnyEvent::Filesys::Watcher::Fallback;
-		$self = AnyEvent::Filesys::Watcher::Fallback->new(%args);
+		die $@;
 	}
 
 	return $self;
