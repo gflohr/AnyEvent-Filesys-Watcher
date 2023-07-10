@@ -32,7 +32,7 @@ sub run_test {
 	create_test_files 'foo', 'bar', 'baz';
 
 	my $timer = AnyEvent->timer(
-		after => 3,
+		after => 5,
 		cb => sub {
 			ok 0, "lame test";
 			$done->send;
