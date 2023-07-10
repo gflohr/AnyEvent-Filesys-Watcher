@@ -9,8 +9,13 @@ for details.
 
 # INSTALLATION
 
-Unless you are using MS-DOS, you should install a helper module that provides
-the binding for the operating system's filesystem watch functionality:
+Unless your operating system is missing in the list below, you have to install
+a helper module that provides the binding for the kernel filesystem watch
+functionality.
+
+If the command `cpanm` is not available on your system, see
+http://www.cpan.org/modules/INSTALL.html for instructions on how to install
+Perl modules.
 
 ## Linux
 
@@ -33,7 +38,15 @@ $ make install
 ```
 
 The current version 0.14 of `Mac::FSEvents` available on CPAN does not
-build on recent Mac OS versions.
+build on recent Mac OS versions.  This will hopefully change soon.
+
+## MS-DOS
+
+Install `Filesys::Notify::Win32::ReadDirectoryChanges`:
+
+```sh
+$ cpanm Filesys::Notify::Win32::ReadDirectoryChanges
+```
 
 ## BSD
 
@@ -49,7 +62,7 @@ curious.
 
 # AUTHOR
 
-`AnyEvent::Filesys::Watcher` was originally written 
+`AnyEvent::Filesys::Watcher` was originally written as
 `AnyEvent::Filesys::Notify` by Mark Grimes,
 <mgrimes@cpan.org> and others, and later heavily modifyed 
 by [Guido Flohr](http://www.guido-flohr.net/).
