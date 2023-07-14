@@ -33,7 +33,6 @@ my %module_build_args = (
     "Path::Iterator::Rule" => 0,
     "Scalar::Util" => 0,
     "Socket" => 0,
-    "Thread::Queue" => "3.13",
     "Time::HiRes" => 0,
     "base" => 0,
     "constant" => 0,
