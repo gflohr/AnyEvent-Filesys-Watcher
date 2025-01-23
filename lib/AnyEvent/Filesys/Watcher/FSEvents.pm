@@ -186,7 +186,9 @@ sub new {
 
 	# Create an AnyEvent->io watcher for each fs_monitor
 	my $alter_ego = $self;
-	my $watcher = AE::io $fs_monitor->watch, 0, sub {
+	$self->{__mac_fh} = $fs_monitor->watch;
+
+	my $watcher = AE::io $self->{__mac_fh}, 0, sub {
 		if (my @raw_events = $fs_monitor->read_events) {
 			$alter_ego->_processEvents(@raw_events);
 		}
