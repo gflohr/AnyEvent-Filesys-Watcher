@@ -19,7 +19,7 @@ BEGIN {
 }
 use Pod::Coverage::TrustPod;
 
-my %skip = map { $_ => 1 } qw( AnyEvent::Filesys::Watcher::Inotify2 );
+my %skip = map { $_ => 1 } qw( AnyEvent::Filesys::Watcher::Inotify2 AnyEvent::Filesys::Watcher::ReadDirectoryChanges );
 
 my @modules;
 for my $module ( all_modules() ) {
