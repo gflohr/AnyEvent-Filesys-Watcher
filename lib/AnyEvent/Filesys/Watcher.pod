@@ -19,7 +19,7 @@ AnyEvent::Filesys::Watcher - Watch file system for changes
 =head1 DESCRIPTION
 
 This module is very similar to B<AnyEvent::Filesys::Notify>.  The main
-difference is that it is not based on L<Moo> and has therefore has
+difference is that it is not based on L<Moo> and has therefore has less
 dependencies.
 
 See L</"DIFFERENCES TO AnyEvent::Filesys::Notify"> for other differences.
@@ -36,10 +36,12 @@ Creates a new B<AnyEvent::Filesys::Watcher>.  The constructor may throw an
 exception in case of an error!
 
 In fact, it createss an instance of one of the subclasses
-L<AnyEvent::Filesys::Watcher::Fallback>,
-L<AnyEvent::Filesys::Watcher::FSEvents>,
-L<AnyEvent::Filesys::Watcher::INotify2>,
-L<AnyEvent::Filesys::Watcher::KQueue> that all inherit from this module.
+L<AnyEvent::Filesys::Watcher::Fallback> (all platforms),
+L<AnyEvent::Filesys::Watcher::FSEvents> (macOS),
+L<AnyEvent::Filesys::Watcher::INotify2> (Linux),
+L<AnyEvent::Filesys::Watcher::KQueue> (BSD/macOS),
+L<AnyEvent::Filesys::Watcher::ReadDirectoryChanges> (MS-DOS aka Windows) that
+all inherit from this module.
 
 If the instantiation of the subclass fails, an instance of
 L<AnyEvent::Filesys::Watcher::Fallback> is returned unless a specific backend
@@ -72,7 +74,7 @@ object was instantiated.
 
 A code reference that is called, when a modification to the monitored
 directories is deteced. The callback is passed a list of
-L<AnyEvent::Filesys::Watcher::Events>.
+L<AnyEvent::Filesys::Watcher::Event>s.
 
 This option is mandatory.
 
@@ -133,8 +135,9 @@ a fully qualified name by prefixing it with a plus.
 Optional. The default is os-dependent: For Linux it is
 L<AnyEvent::Filesys::Watcher::Inotify2>, for Mac OS it is
 L<AnyEvent::Filesys::Watcher::FSEvents>, for BSD systems it is
-L<AnyEvent::Filesys::Watcher::KQueue>, and for all other systems it is
-L<AnyEvent::Filesys::Watcher::Fallback>.
+L<AnyEvent::Filesys::Watcher::KQueue>, for MS-DOS it is
+L<AnyEvent::Filesys::Watcher::ReadDirectoryChhanges> and for all other systems
+it is L<AnyEvent::Filesys::Watcher::Fallback>.
 
 =back
 
@@ -166,7 +169,7 @@ Getter/setter for the filter.
 
 =head1 INSTALLATION
 
-Unless you are using MS-DOS, you should install a helper module that provides
+You should install one of the helper module that provides
 the binding for the operating system's filesystem watch functionality:
 
 =head2 Linux
@@ -177,18 +180,13 @@ Install L<Linux::Inotify2>:
 
 =head2 Mac OS
 
-Install a fork of L<Mac::FSEvents>:
+Install L<Mac::FSEvents>:
 
-    $ git clone https://github.com/skaji/Mac-FSEvents
-    $ cd Mac-FSEvents
-    $ perl Makefile.PL
-    $ make
-    $ make install
+    $ cpanm Mac::FSEvents
 
-The current version 0.14 of L<Mac::FSEvents> available on CPAN does not
-build on recent Mac OS versions.
+Versions before 0.20 do not build on recent macOS instances.
 
-=head2 BSD
+=head2 BSD and macOS
 
 Install L<IO::KQueue> and L<BSD::Resource>
 
@@ -198,12 +196,19 @@ This would also work for Mac OS but you have little reason to prefer
 L<IO::KQueue> over L<Mac::FSEvents> unless you are a developer or just
 curious.
 
+=head2 MS-DOS ("Windows")
+
+Install L<Filesys::Notify::Win32::ReadDirectoryChanges>.
+
+This backend causes spurious errors. If that happens, please use the
+fallback backend.
+
 =head1 USAGE RECOMMENDATIONS
 
 Different platforms have different notions about file system changes and how
 to report them.  This module tries to remove these differences and always
 report the same events for a certain file type change.  The test suite
-test this behaviour but still you should not rely on it.
+tests this behaviour but still you should not rely on it.
 
 A robust implementation using this module should follow two rules:
 
@@ -211,7 +216,7 @@ A robust implementation using this module should follow two rules:
 
 =item Do not expect events to come in a certain order.
 
-=item Treat the events "modified" and "created" equally "existing file has changed"
+=item Treat the events "modified" and "created" equally as "existing file has changed"
 
 =back
 
@@ -250,10 +255,12 @@ B<AnyEvent::Filesys::Watcher> was written by L<Guido Flohr|http://www.guido-floh
 
 =head1 SEE ALSO
 
+L<AnyEvent::Filesys::Watcher::Event>,
 L<AnyEvent::Filesys::Watcher::Fallback>,
 L<AnyEvent::Filesys::Watcher::FSEvents>,
 L<AnyEvent::Filesys::Watcher::INotify2>,
 L<AnyEvent::Filesys::Watcher::KQueue>,
+L<AnyEvent::Filesys::Watcher::ReadDirectoryChanges>,
 L<Linux::Inotify2>,
 L<Mac::FSEvents>,
 L<IO::KQueue>, L<BSD::Resource>,
