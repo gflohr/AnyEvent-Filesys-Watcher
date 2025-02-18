@@ -66,6 +66,18 @@ Returns the type as a string.
 
 Returns a truthy value for directories, false otherwise.
 
+=item B<isCreated>
+
+Returns a truty value if the event was triggered by a file creation.
+
+=item B<isDeleted>
+
+Returns a truty value if the event was triggered by a file deletion.
+
+=item B<isModified>
+
+Returns a truty value if the event was triggered by a file modification.
+
 =item B<id>
 
 Returns the unique id if specified.
@@ -73,6 +85,11 @@ Returns the unique id if specified.
 =item B<timestamp>
 
 Returns the timestamp of the event.
+
+=item B<cmp>
+
+Compare the timestamps of two events and returns -1, 0, or 1 like the
+operator C<cmp> does. This can be used, when sorting two events.
 
 =back
 

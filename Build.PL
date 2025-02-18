@@ -18,7 +18,7 @@ my %module_build_args = (
     "Guido Flohr <guido.flohr\@cantanea.com>"
   ],
   "dist_name" => "AnyEvent-Filesys-Watcher",
-  "dist_version" => "v0.1.0",
+  "dist_version" => "v0.1.1",
   "license" => "unrestricted",
   "module_name" => "AnyEvent::Filesys::Watcher",
   "recursive_test_files" => 1,
@@ -87,7 +87,7 @@ if ( $^O eq 'linux' ) {
 }
 
 if ( $^O eq 'darwin' ) {
-	$module_build_args{requires}{'Mac::FSEvents'} = '0.10';
+	$module_build_args{requires}{'Mac::FSEvents'} = '0.20';
 }
 
 if ( $^O =~ /bsd/i ) {

@@ -2,6 +2,8 @@ package AnyEvent::Filesys::Watcher::Fallback;
 
 use strict;
 
+# VERSION
+
 use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
 
 use AnyEvent;

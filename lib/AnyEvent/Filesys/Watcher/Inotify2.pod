@@ -5,8 +5,8 @@ AnyEvent::Filesys::Watcher::Inotify2 - Linux file system watcher
 =head1 SYNOPSIS
 
     $watcher = AnyEvent::Filesys::Watcher::Inotify2->new(
-		directories => ['lib', 't'],
-		callback => sub { warn "you're working too much"},
+        directories => ['lib', 't'],
+        callback => sub { warn "you're working too much"},
     );
 
     # This has the same effect as:

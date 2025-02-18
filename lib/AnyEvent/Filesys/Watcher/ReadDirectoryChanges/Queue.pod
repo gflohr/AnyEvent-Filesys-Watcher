@@ -60,7 +60,7 @@ See L<Thread::Queue/new>.
 =item B<handle>
 
 Returns an L<IO::Handle> that can be polled with L<select()|perlfunc/select>
-(the 2nd variant that calls the B<select(2) syscall).
+(the 2nd variant that calls the B<select(2)> syscall).
 
 You can also read from this handle but this is unnecessary and dangerous.
 
@@ -92,6 +92,8 @@ Returns the number of pending items in the queue, see L<Thread;:Queue/pending>.
 
 This method is actually not needed by L<Filesys::Notify::ReadDirectoryChanges>
 but necessary for checking that there is really data available in the queue.
+
+=back
 
 =head1 AUTHOR
 
