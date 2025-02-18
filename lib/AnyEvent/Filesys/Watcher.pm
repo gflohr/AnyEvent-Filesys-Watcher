@@ -169,16 +169,6 @@ sub filter {
 	return $self->{__filter};
 }
 
-sub parseEvents {
-	my ($self, $bool) = @_;
-
-	if (@_ > 1) {
-		$self->{__parse_events} = $bool;
-	}
-
-	return $self->{__parse_events};
-}
-
 # Taken from AnyEvent::Filesys::Notify.
 sub _scanFilesystem {
 	my ($self, @args) = @_;
@@ -291,10 +281,10 @@ sub _processEvents {
 }
 
 sub _parseEvents {
-	shift->rescan;
+	shift->_rescan;
 }
 
-sub rescan {
+sub _rescan {
 	my ($self) = @_;
 
 	my $new_fs = $self->_scanFilesystem($self->directories);
