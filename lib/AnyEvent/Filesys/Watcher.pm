@@ -7,6 +7,8 @@ package AnyEvent::Filesys::Watcher;
 
 use strict;
 
+# VERSION
+
 use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
 use Scalar::Util qw(reftype);
 use Path::Iterator::Rule;

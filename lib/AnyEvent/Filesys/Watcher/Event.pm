@@ -2,6 +2,8 @@ package AnyEvent::Filesys::Watcher::Event;
 
 use strict;
 
+# VERSION
+
 use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
 
 use Time::HiRes;

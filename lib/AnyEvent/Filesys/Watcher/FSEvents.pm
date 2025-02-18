@@ -2,6 +2,8 @@ package AnyEvent::Filesys::Watcher::FSEvents;
 
 use strict;
 
+# VERSION
+
 use AnyEvent;
 use Mac::FSEvents;
 use Scalar::Util qw(weaken);

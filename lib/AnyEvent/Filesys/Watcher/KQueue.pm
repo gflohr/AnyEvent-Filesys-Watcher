@@ -2,6 +2,8 @@ package AnyEvent::Filesys::Watcher::KQueue;
 
 use strict;
 
+# VERSION
+
 use Locale::TextDomain ('AnyEvent-Filesys-Watcher');
 
 use AnyEvent;
