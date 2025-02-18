@@ -1,5 +1,5 @@
-# German translations for AnyEvent-Filesys-Watcher. 
-# Copyright (C) 2023 Guido Flohr.
+# German translations for AnyEvent-Filesys-Watcher.
+# Copyright (C) 2023-2025 Guido Flohr.
 # This file is distributed under the same license as the
 # AnyEvent-Filesys-Watcher package.
 msgid ""
